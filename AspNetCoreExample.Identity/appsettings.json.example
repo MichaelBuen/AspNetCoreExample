@@ -1,0 +1,15 @@
+﻿{
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=localhost;Port=5432;Database=AspNetCoreExample;User Id=postgres;Password=opensesame93;"
+  },
+  "Logging": {
+    "IncludeScopes": false,
+    "LogLevel": {
+      "Default": "Warning"
+    }
+  },
+  "Authentication:Facebook:AppId": "app-id-goes-here-bbb",
+  "Authentication:Facebook:AppSecret": "app-secret-goes-here",
+  "Authentication:Google:ClientId": "client-id-goes-here",
+  "Authentication:Google:ClientSecret": "client-secret-goes-here"
+}
