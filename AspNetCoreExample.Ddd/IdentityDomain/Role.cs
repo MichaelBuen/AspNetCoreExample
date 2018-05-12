@@ -1,6 +1,5 @@
 ﻿namespace AspNetCoreExample.Ddd.IdentityDomain
 {
-    using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
@@ -13,10 +12,11 @@
         /// Many-to-many between Roles and Users
         /// </summary>
         /// <value>The users.</value>
-        public IEnumerable<User> Users { get; set; }
+        public IEnumerable<User> Users { get; protected set; } = new List<User>();
 
 
         public Role(string roleName) : base(roleName) { }
+
 
         public void UpdateFromDetached(Role role)
         {

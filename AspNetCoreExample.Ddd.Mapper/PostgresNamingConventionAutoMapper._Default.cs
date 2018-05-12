@@ -1,28 +1,44 @@
 ﻿namespace AspNetCoreExample.Ddd.Mapper
 {
-    using System;
     using System.Linq;
-    using NHibernate.Mapping.ByCode;
 
     partial class PostgresNamingConventionAutomapper : NHibernate.Mapping.ByCode.ConventionModelMapper
     {
-        public PostgresNamingConventionAutomapper()
+        internal PostgresNamingConventionAutomapper()
         {
             var mapper = this;
 
-            mapper.IsEntity(
-                (t, declared) => t.Namespace.StartsWith("AspNetCoreExample.Ddd", System.StringComparison.InvariantCulture)
-            );
-
-
-            mapper.IsProperty((mi, isProp) =>
+            mapper.IsEntity((t, declared) =>
             {
-                dynamic m = mi;
-                Type pt = m.PropertyType; // why NHibernate is hiding PropertyType?
+                var isEntity = t.Namespace.StartsWith("AspNetCoreExample.Ddd", System.StringComparison.InvariantCulture);
+
+                System.Diagnostics.Debug.WriteLine("is entity " + t);
+                System.Diagnostics.Debug.WriteLine(isEntity);
+
+
+                return isEntity;
+            });
+
+
+            mapper.IsProperty((memberInfo, isProp) =>
+            {
+                dynamic m = memberInfo;
+                System.Type pt = m.PropertyType; // why NHibernate is hiding PropertyType?
                 if (!isProp && pt == typeof(Jsonb))
                     return true;
 
                 return isProp;
+            });
+
+            mapper.IsOneToOne((memberInfo, isOneToOne) =>
+            {
+                var x = memberInfo.GetPropertyOrFieldType();
+
+                System.Diagnostics.Debug.WriteLine("Hello ");
+                System.Diagnostics.Debug.WriteLine(x);
+
+
+                return isOneToOne;
             });
 
             mapper.BeforeMapClass += Mapper_BeforeMapClass;
@@ -35,9 +51,11 @@
             mapper.BeforeMapBag += Mapper_BeforeMapBag;
             mapper.BeforeMapSet += Mapper_BeforeMapSet;
 
+            mapper.BeforeMapJoinedSubclass += Mapper_BeforeMapJoinedSubclass;
 
+
+            MapManyToMany(mapper);          
             OverrideMapping(mapper);
-            MapManyToMany(mapper);
         }
 
 
@@ -54,16 +72,10 @@
 #endif
 
 
+
             string fullName = type.FullName; // example: AspNetCoreExample.Ddd.IdentityDomain.User
 
-            string[] fullNameSplit = fullName.Split('.');
-
-            string schemaDomainName = fullNameSplit[2];
-            string schemaName = schemaDomainName.Substring(0, schemaDomainName.Length - "Domain".Length).ToLowercaseNamingConvention().Replace("__", "_");
-
-            string className = fullNameSplit[3];
-
-            string tableName = className.ToLowercaseNamingConvention();
+            var (schemaName, tableName) = fullName.GetTableMapping();
 
 
             classCustomizer.Schema(schemaName);
@@ -85,15 +97,15 @@
 
         static void CustomizeIdPrimaryKey(
             System.Type type,
-            NHibernate.Mapping.ByCode.IClassAttributesMapper classCustomizer,
+            NHibernate.Mapping.ByCode.IClassAttributesMapper classAttributesMapper,
             string schemaName,
             string tableName
         )
         {
             var primaryKeyProperty = type.GetMember(
-                "Id",                            
-                System.Reflection.BindingFlags.Public 
-                | System.Reflection.BindingFlags.NonPublic 
+                "Id",
+                System.Reflection.BindingFlags.Public
+                | System.Reflection.BindingFlags.NonPublic
                 | System.Reflection.BindingFlags.Instance
             );
 
@@ -104,7 +116,7 @@
 
                 var propertyType = (System.Reflection.PropertyInfo)mi;
 
-                classCustomizer.Id(mi,
+                classAttributesMapper.Id(mi,
                     idMapper =>
                     {
                         idMapper.Column("id");
@@ -113,8 +125,9 @@
                         {
                             idMapper.Generator(
                                 NHibernate.Mapping.ByCode.Generators.Sequence,
-                                generatorMapping => generatorMapping.Params(new { 
-                                    sequence = schemaName + "." + tableName + "_id_seq" 
+                                generatorMapping => generatorMapping.Params(new
+                                {
+                                    sequence = schemaName + "." + tableName + "_id_seq"
                                 })
                             );
                         }
@@ -125,7 +138,7 @@
                         else
                         {
                             throw new System.ArgumentException(
-                                string.Format("Id with type of {0} is unusual. Class: {1}", 
+                                string.Format("Id with type of {0} is unusual. Class: {1}",
                                               propertyType.PropertyType, type)
                             );
                         }
@@ -136,13 +149,13 @@
 
         static void CustomizeEnumPrimaryKey(
             System.Type type,
-            NHibernate.Mapping.ByCode.IClassAttributesMapper classCustomizer
+            NHibernate.Mapping.ByCode.IClassAttributesMapper classAttributesMapper
         )
         {
             var primaryKeyProperty = type.GetMember(
                 "Enum",
-                System.Reflection.BindingFlags.Public 
-                | System.Reflection.BindingFlags.NonPublic 
+                System.Reflection.BindingFlags.Public
+                | System.Reflection.BindingFlags.NonPublic
                 | System.Reflection.BindingFlags.Instance
             );
 
@@ -150,7 +163,7 @@
             {
                 System.Reflection.MemberInfo mi = primaryKeyProperty[0];
 
-                classCustomizer.Id(mi,
+                classAttributesMapper.Id(mi,
                     idMapper =>
                     {
                         idMapper.Column("enum");
@@ -165,35 +178,35 @@
         static void Mapper_BeforeMapProperty(
             NHibernate.Mapping.ByCode.IModelInspector modelInspector,
             NHibernate.Mapping.ByCode.PropertyPath member,
-            NHibernate.Mapping.ByCode.IPropertyMapper propertyCustomizer
+            NHibernate.Mapping.ByCode.IPropertyMapper propertyMapper
         )
         {
             string postgresFriendlyName = member.ToColumnName().ToLowercaseNamingConvention();
 
-            propertyCustomizer.Column(postgresFriendlyName);
+            propertyMapper.Column(postgresFriendlyName);
 
         }
 
         static void Mapper_AfterMapProperty(
-            NHibernate.Mapping.ByCode.IModelInspector modelInspector, 
-            NHibernate.Mapping.ByCode.PropertyPath member, 
-            NHibernate.Mapping.ByCode.IPropertyMapper propertyCustomizer
+            NHibernate.Mapping.ByCode.IModelInspector modelInspector,
+            NHibernate.Mapping.ByCode.PropertyPath propertyPath,
+            NHibernate.Mapping.ByCode.IPropertyMapper propertyMapper
         )
         {
-            dynamic lm = member.LocalMember;
+            dynamic lm = propertyPath.LocalMember;
             System.Type st = lm.PropertyType; // why NHibernate is hiding PropertyType? thanks to dynamic keyword, nothing can hide from dynamic
 
             if (st == typeof(Jsonb))
             {
-                propertyCustomizer.Type(typeof(AspNetCoreExample.Infrastructure.NHibernateInfra.JsonbType), parameters: null);
+                propertyMapper.Type(typeof(AspNetCoreExample.Infrastructure.NHibernateInfra.JsonbType), parameters: null);
             }
 
         }
 
         static void Mapper_BeforeMapBag(
             NHibernate.Mapping.ByCode.IModelInspector modelInspector,
-            NHibernate.Mapping.ByCode.PropertyPath member,
-            NHibernate.Mapping.ByCode.IBagPropertiesMapper propertyCustomizer
+            NHibernate.Mapping.ByCode.PropertyPath propertyPath,
+            NHibernate.Mapping.ByCode.IBagPropertiesMapper bagPropertiesCustomizer
         )
         {
 
@@ -206,17 +219,18 @@
              * 
              */
 
-            string parentEntity = member.LocalMember.DeclaringType.Name.ToLowercaseNamingConvention(); // this gets the person table. lowercase name in postgres.
-            string foreignKey = parentEntity + "_id";
-            propertyCustomizer.Key(keyMapping => keyMapping.Column(foreignKey));
+            // this gets the person table. lowercase name in postgres.
+            string parentEntity = propertyPath.LocalMember.DeclaringType.Name.ToLowercaseNamingConvention();
+            string foreignKey = parentEntity + "_fk";
+            bagPropertiesCustomizer.Key(keyMapping => keyMapping.Column(foreignKey));
 
 
             // http://www.ienablemuch.com/2014/10/inverse-cascade-variations-on-nhibernate.html
             // best persistence approach: Inverse+CascadeAll 
-            propertyCustomizer.Inverse(true);
-            propertyCustomizer.Cascade(NHibernate.Mapping.ByCode.Cascade.All | NHibernate.Mapping.ByCode.Cascade.DeleteOrphans);
+            bagPropertiesCustomizer.Inverse(true);
+            bagPropertiesCustomizer.Cascade(NHibernate.Mapping.ByCode.Cascade.All | NHibernate.Mapping.ByCode.Cascade.DeleteOrphans);
 
-            propertyCustomizer.Lazy(NHibernate.Mapping.ByCode.CollectionLazy.Extra);
+            bagPropertiesCustomizer.Lazy(NHibernate.Mapping.ByCode.CollectionLazy.Extra);
 
 
 #if USECACHE
@@ -227,17 +241,17 @@
 
         static void Mapper_BeforeMapSet(
             NHibernate.Mapping.ByCode.IModelInspector modelInspector,
-            NHibernate.Mapping.ByCode.PropertyPath member,
-            NHibernate.Mapping.ByCode.ISetPropertiesMapper propertyCustomizer
+            NHibernate.Mapping.ByCode.PropertyPath propertyPath,
+            NHibernate.Mapping.ByCode.ISetPropertiesMapper setPropertiesCustomizer
         )
         {
-
-            string parentEntity = member.LocalMember.DeclaringType.Name.ToLowercaseNamingConvention(); // this gets the person table. lowercase name in postgres.
-            string foreignKey = parentEntity + "_id";
-            propertyCustomizer.Key(keyMapping => keyMapping.Column(foreignKey));
+            // this gets the person table. lowercase name in postgres.
+            string parentEntity = propertyPath.LocalMember.DeclaringType.Name.ToLowercaseNamingConvention();
+            string foreignKey = parentEntity + "_fk";
+            setPropertiesCustomizer.Key(keyMapping => keyMapping.Column(foreignKey));
 
             // See advantage of Extra Lazy here: http://www.ienablemuch.com/2013/12/pragmatic-ddd.html
-            propertyCustomizer.Lazy(NHibernate.Mapping.ByCode.CollectionLazy.Extra);
+            setPropertiesCustomizer.Lazy(NHibernate.Mapping.ByCode.CollectionLazy.Extra);
 
 #if USECACHE
             propertyCustomizer.Cache(cacheMapping => cacheMapping.Usage(NHibernate.Mapping.ByCode.CacheUsage.ReadWrite));
@@ -249,8 +263,8 @@
 
         static void Mapper_BeforeMapManyToOne(
             NHibernate.Mapping.ByCode.IModelInspector modelInspector,
-            NHibernate.Mapping.ByCode.PropertyPath member,
-            NHibernate.Mapping.ByCode.IManyToOneMapper propertyCustomizer
+            NHibernate.Mapping.ByCode.PropertyPath propertyPath,
+            NHibernate.Mapping.ByCode.IManyToOneMapper manyToOneMapper
         )
         {
             /*
@@ -265,89 +279,86 @@
              
              */
 
-            // ProductCategory property name maps to ProductCategoryId column name
+            // ProductCategory property name maps to product_category_fk column name
 
-
-
-            // TODO: Improve this to fetch the actual primary key. 
-            // This relies on the convention that most primary key(s) are the first property of the class.
-
-            string suffix;
-
-
-            Type modelType = member.LocalMember.GetPropertyOrFieldType().UnderlyingSystemType;
-
-
-            var isPrimaryKeyPredetermined = modelType.IsDerivedFromIdentityCore();
-
-            if (isPrimaryKeyPredetermined)
-            {
-                suffix = 
-                    nameof(Microsoft.AspNetCore.Identity.IdentityUser.Id)
-                    .ToLowercaseNamingConvention();
-            }
-            else
-            {
-                suffix = modelType.GetProperties().First().Name
-                        .ToLowercaseNamingConvention();
-            }
-
-
-            /*
-            Examples:
-                Client:
-                    Id
-                BROperator
-                    Enum
-                BRHave
-                    Field
-            */
-
-            string columnName = member.ToColumnName();
+            string columnName = propertyPath.ToColumnName();
 
             string postgresFriendlyName = columnName.ToLowercaseNamingConvention();
 
 
 
             if (!(columnName == "CreatedBy" || columnName == "ModifiedBy"))
-                postgresFriendlyName = postgresFriendlyName + "_" + suffix;
+                postgresFriendlyName = postgresFriendlyName + "_fk";
 
 
-            propertyCustomizer.Column(postgresFriendlyName);
-            propertyCustomizer.Lazy(NHibernate.Mapping.ByCode.LazyRelation.Proxy);
+            manyToOneMapper.Column(postgresFriendlyName);
+            // Looks like we need to use no-proxy, we might encounter ghost object
+            // https://ayende.com/blog/4378/nhibernate-new-feature-no-proxy-associations
+            manyToOneMapper.Lazy(NHibernate.Mapping.ByCode.LazyRelation.Proxy);
         }
 
 
         static void Mapper_BeforeMapManyToMany(
             NHibernate.Mapping.ByCode.IModelInspector modelInspector,
-            NHibernate.Mapping.ByCode.PropertyPath member,
-            NHibernate.Mapping.ByCode.IManyToManyMapper collectionRelationManyToManyCustomizer
+            NHibernate.Mapping.ByCode.PropertyPath propertyPath,
+            NHibernate.Mapping.ByCode.IManyToManyMapper manyToManyMapper
         )
         {
-            Type collectionModelType = member.CollectionElementType();
+            System.Type collectionModelType = propertyPath.CollectionElementType();
 
-            string suffix;
+            string childKeyName =
+                propertyPath.CollectionElementType().Name.ToLowercaseNamingConvention() + "_fk";
 
-            var isPrimaryKeyPredetermined = collectionModelType.IsDerivedFromIdentityCore();
-
-            System.Diagnostics.Debug.WriteLine("is predetermined: " + isPrimaryKeyPredetermined);
-
-            if (isPrimaryKeyPredetermined)
-            {
-                suffix = nameof(Microsoft.AspNetCore.Identity.IdentityUser.Id);
-            }
-            else
-            {
-                suffix = collectionModelType.GetProperties().First().Name
-                        .ToLowercaseNamingConvention();
-            }
-
-
-            string childKeyName = member.CollectionElementType().Name.ToLowercaseNamingConvention() + "_" + suffix;
-
-            collectionRelationManyToManyCustomizer.Column(childKeyName);
-            collectionRelationManyToManyCustomizer.Lazy(NHibernate.Mapping.ByCode.LazyRelation.Proxy);
+            manyToManyMapper.Column(childKeyName);
+            manyToManyMapper.Lazy(NHibernate.Mapping.ByCode.LazyRelation.Proxy);
         }
+
+
+
+
+        void Mapper_BeforeMapJoinedSubclass(
+            NHibernate.Mapping.ByCode.IModelInspector modelInspector,
+            System.Type type,
+            NHibernate.Mapping.ByCode.IJoinedSubclassAttributesMapper joinedSubclassAttributesMapper)
+        {
+            // not working though
+            joinedSubclassAttributesMapper.Lazy(true);
+
+            /*              
+                class Animal
+                {
+                }
+
+                class Dog : Animal
+                {
+                }              
+            */
+
+
+            System.Type baseType = type.BaseType; // Animal
+
+            var (schemaName, tableName) = type.FullName.GetTableMapping();
+
+            joinedSubclassAttributesMapper.Schema(schemaName);
+            joinedSubclassAttributesMapper.Table(tableName);
+
+            joinedSubclassAttributesMapper.Key(k =>
+            {
+                // postgresFriendlyName would be lowercase animal
+                string postgresFriendlyName = baseType.Name.ToLowercaseNamingConvention();
+
+                k.Column(postgresFriendlyName + "_fk");
+                k.Unique(true);
+                k.NotNullable(true);
+                // k.OnDelete(NHibernate.Mapping.ByCode.OnDeleteAction.Cascade);                               
+            });
+
+
+
+
+            System.Diagnostics.Debug.WriteLine("Before joined subclass" + type);
+        }
+
 
 
 
@@ -356,18 +367,51 @@
 
     static class StringHelper
     {
+        // Based on:
+        // https://www.codeproject.com/Articles/108996/Splitting-Pascal-Camel-Case-with-RegEx-Enhancement
+
         internal static string ToLowercaseNamingConvention(this string s, bool toLowercase = true) =>
             toLowercase ?
-                new System.Text.RegularExpressions.Regex(@"
-                (?<=[A-Z])(?=[A-Z][a-z]) |
-                 (?<=[^A-Z])(?=[A-Z]) |
-                 (?<=[A-Za-z])(?=[^A-Za-z])", System.Text.RegularExpressions.RegexOptions.IgnorePatternWhitespace)
-                          .Replace(s, "_").ToLower()
+                System.Text.RegularExpressions.Regex.Replace(
+                    s,
+                    @"(?<!^)([A-Z][a-z]|(?<=[a-z])[^a-z]|(?<=[A-Z])[0-9_])",
+                    "_$1",
+                    System.Text.RegularExpressions.RegexOptions.Compiled).Trim().Replace("___", "__").ToLower()
+                :
+                    s;
 
-            :
-                s;
 
+        internal static (string schemaName, string tableName) GetTableMapping(this string classFullName)
+        {
+            // classFullName:
+            // AspNetCoreExample.Ddd.IdentityDomain.User
+
+            string[] fullNameSplit = classFullName.Split('.');
+
+
+            // IdentityDomain
+            string schemaDomainName = fullNameSplit[2];
+
+            // identity
+            string schemaName =
+                schemaDomainName.Substring(0, schemaDomainName.Length - "Domain".Length)
+                                .ToLowercaseNamingConvention();
+
+            // User
+            string className = fullNameSplit[3];
+
+            // user
+            string tableName = className.ToLowercaseNamingConvention();
+
+            return (schemaName, tableName);
+        }
     }
+}
+
+
+namespace AspNetCoreExample.Ddd.Mapper
+{
+    using NHibernate.Mapping.ByCode;
 
     static class NHibernateHelper
     {
@@ -375,13 +419,15 @@
         internal static System.Type CollectionElementType(
             this NHibernate.Mapping.ByCode.PropertyPath member
         ) =>
-          member.LocalMember.GetPropertyOrFieldType()
-          .DetermineCollectionElementOrDictionaryValueType();
+            member.LocalMember.GetPropertyOrFieldType()
+            .DetermineCollectionElementOrDictionaryValueType();
 
-
+        internal static System.Type GetPropertyOrFieldType(
+            this System.Reflection.MemberInfo memberInfo
+        ) => NHibernate.Mapping.ByCode.TypeExtensions.GetPropertyOrFieldType(memberInfo);
 
         // https://stackoverflow.com/questions/457676/check-if-a-class-is-derived-from-a-generic-class
-        internal static bool IsOpenGenericAssignableFrom(this Type openGeneric, Type fromCheck)
+        internal static bool IsOpenGenericAssignableFrom(this System.Type openGeneric, System.Type fromCheck)
         {
             while (fromCheck != null && fromCheck != typeof(object))
             {
@@ -398,12 +444,11 @@
 
     static class IdentityCoreHelper
     {
-        internal static bool IsDerivedFromIdentityCore(this Type modelType) =>
+        internal static bool IsDerivedFromIdentityCore(this System.Type modelType) =>
             typeof(Microsoft.AspNetCore.Identity.IdentityUser<>)
                 .IsOpenGenericAssignableFrom(modelType.BaseType)
             || typeof(Microsoft.AspNetCore.Identity.IdentityRole<>)
                 .IsOpenGenericAssignableFrom(modelType.BaseType);
 
     }
-
 }

@@ -1,12 +1,7 @@
-﻿// !!! WARNING!!!
-// See Guideline on Set v Bag
-
-
-namespace AspNetCoreExample.Ddd.Mapper
-{    
-    partial class PostgresNamingConventionAutomapper: NHibernate.Mapping.ByCode.ConventionModelMapper
+﻿namespace AspNetCoreExample.Ddd.Mapper
+{
+    partial class PostgresNamingConventionAutomapper : NHibernate.Mapping.ByCode.ConventionModelMapper
     {
-
         // See Guideline on many-to-many mapping
 
         static void MapManyToMany(NHibernate.Mapping.ByCode.ConventionModelMapper mapper)
@@ -42,6 +37,8 @@ namespace AspNetCoreExample.Ddd.Mapper
                 mapping => mapping.ManyToMany());
             });
         }
+
+
     }//class PostgresNamingConventionAutomapper
 
 }

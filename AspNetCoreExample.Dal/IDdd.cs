@@ -1,10 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace AspNetCoreExample.Dal
+﻿namespace AspNetCoreExample.Dal
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Threading.Tasks;
+
+
     public interface IDdd : IDisposable
     {
         /// <summary>
@@ -44,14 +45,15 @@ namespace AspNetCoreExample.Dal
         Task<TDomainModel> GetAsync<TDomainModel>(object id);
 
         /// <summary>
-        ///  Renamed from Load to JustKey.
+        ///  Renamed from Load to ReferenceTo.
         ///  The name Load gives the impression that it read the object from the database,
-        ///  when in fact it just creates an object pointer.        
+        ///  when in fact it just creates an object reference based on the id.
         /// </summary>
         /// <typeparam name="TDomainModel"></typeparam>
         /// <param name="id"></param>
         /// <returns></returns>
-        TDomainModel JustKey<TDomainModel>(object id) where TDomainModel : class;
+        TDomainModel ReferenceTo<TDomainModel>(object id) where TDomainModel : class;
+        Task<TDomainModel> ReferenceToAsync<TDomainModel>(object id) where TDomainModel : class;
         // See the Persist notes at the bottom of this code.
         void Persist<TDomainModel>(TDomainModel transientObject) where TDomainModel : class;
         Task PersistAsync<TDomainModel>(TDomainModel transientObject) where TDomainModel : class;
@@ -100,12 +102,12 @@ namespace AspNetCoreExample.Dal
     /*
 
     For INSERT
-	* Merge and Persist are both OK
+    * Merge and Persist are both OK
 
 
     For UPDATE
 
-	* Merge is ok for UPDATE if the detached object carries the full state of the entity, 
+    * Merge is ok for UPDATE if the detached object carries the full state of the entity, 
         as Merge doesn't need to read the database prior to updating. 
         No overhead of reading the database when updating, regardless of having second level cache or not.
         However, Merge is risky if the detached object doesn't carry the full state, as the previously written fields

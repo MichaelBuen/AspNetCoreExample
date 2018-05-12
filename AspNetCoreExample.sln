@@ -24,6 +24,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AspNetCoreExample.Ddd.Mappe
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AspNetCoreExample.Infrastructure", "AspNetCoreExample.Infrastructure\AspNetCoreExample.Infrastructure.csproj", "{D8075144-4305-4892-8408-0C5900296C87}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AspNetCoreExample.UnitTestFriendlyExtensionMethods", "AspNetCoreExample.UnitTestFriendlyExtensionMethods\AspNetCoreExample.UnitTestFriendlyExtensionMethods.csproj", "{2470A8B2-D157-47A9-A81E-88F368712777}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -133,5 +135,17 @@ Global
 		{D8075144-4305-4892-8408-0C5900296C87}.Release|x64.Build.0 = Release|Any CPU
 		{D8075144-4305-4892-8408-0C5900296C87}.Release|x86.ActiveCfg = Release|Any CPU
 		{D8075144-4305-4892-8408-0C5900296C87}.Release|x86.Build.0 = Release|Any CPU
+		{2470A8B2-D157-47A9-A81E-88F368712777}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2470A8B2-D157-47A9-A81E-88F368712777}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2470A8B2-D157-47A9-A81E-88F368712777}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{2470A8B2-D157-47A9-A81E-88F368712777}.Debug|x64.Build.0 = Debug|Any CPU
+		{2470A8B2-D157-47A9-A81E-88F368712777}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{2470A8B2-D157-47A9-A81E-88F368712777}.Debug|x86.Build.0 = Debug|Any CPU
+		{2470A8B2-D157-47A9-A81E-88F368712777}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2470A8B2-D157-47A9-A81E-88F368712777}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2470A8B2-D157-47A9-A81E-88F368712777}.Release|x64.ActiveCfg = Release|Any CPU
+		{2470A8B2-D157-47A9-A81E-88F368712777}.Release|x64.Build.0 = Release|Any CPU
+		{2470A8B2-D157-47A9-A81E-88F368712777}.Release|x86.ActiveCfg = Release|Any CPU
+		{2470A8B2-D157-47A9-A81E-88F368712777}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

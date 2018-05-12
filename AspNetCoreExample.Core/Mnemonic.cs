@@ -35,13 +35,13 @@ namespace AspNetCoreExample
         mustUploadNewTemplateConstraint          , // given text: Must upload new template
         notAllowedToAccessOtherTenantData        , // given text: Not allowed to access other tenant's data
         publicTemplateNote                       , // given text: Italicized are public templates
-        moonlightHasRegisteredUserNote             , // given text: Cannot register new user to this AspNetCoreExample session. This AspNetCoreExample session is already registered to a user
+        aspNetCoreExampleHasRegisteredUserNote             , // given text: Cannot register new user to this AspNetCoreExample session. This AspNetCoreExample session is already registered to a user
         blankSessionWarning                      , // given text: This might not be your AspNetCoreExample record, or AspNetCoreExample session was cancelled
-        moonlightAlreadyCompletedNotify            , // given text: You already completed the AspNetCoreExample. Thanks for checking.
-        moonlightNotYetCompletmoonlighty             , // given text: You haven't completed the AspNetCoreExample. You can resume it anytime.
-        moonlightCompleteThanksNotify              , // given text: Thanks for completing the AspNetCoreExample.
+        aspNetCoreExampleAlreadyCompletedNotify            , // given text: You already completed the AspNetCoreExample. Thanks for checking.
+        aspNetCoreExampleNotYetCompletaspNetCoreExampley             , // given text: You haven't completed the AspNetCoreExample. You can resume it anytime.
+        aspNetCoreExampleCompleteThanksNotify              , // given text: Thanks for completing the AspNetCoreExample.
         emailAlreadyRegisteredNotify             , // given text: Your email is already registered to your existing username. Log in with your existing username or have your password reset.
-        cannotSelfmoonlightCreatedApplicantNotify  , // given text: You cannot moonlight the applicant you registered.        
+        cannotSelfaspNetCoreExampleCreatedApplicantNotify  , // given text: You cannot aspNetCoreExample the applicant you registered.        
         failedCreatePasswordChangeSessionNotify  , // given text: Cannot do a password reset, no existing account yet. Please register first.        
         passwordChangeSessionInvalidNotify       , // given text: Password Change session is already invalid
         accountCreatedNotify                     , // given text: Account Created. You will be directed to login.
@@ -49,21 +49,21 @@ namespace AspNetCoreExample
         passwordResetEmailSubject                , // given text: Password reset request
         passwordResetEmailBody                   , // given text: You requested a <a href="https://{subdomain}.{domain}/password-changer/{userId}/{passwordChangeSession}">password reset</a>
 
-        moonlightEmailSubject                      , // given text: Welcome {firstName} to {companyName}
-        moonlightEmailBody                         , // given text: You can now <a href="https://{subdomain}.{domain}/moonlight/{moonlightId}/{moonlightSession}">start</a> your company AspNetCoreExample
+        aspNetCoreExampleEmailSubject                      , // given text: Welcome {firstName} to {companyName}
+        aspNetCoreExampleEmailBody                         , // given text: You can now <a href="https://{subdomain}.{domain}/aspNetCoreExample/{aspNetCoreExampleId}/{aspNetCoreExampleSession}">start</a> your company AspNetCoreExample
 
-        employeemoonlightCompletionRequirementNotify, // given text: You can do the review after the employee completed his/her AspNetCoreExample.
+        employeeaspNetCoreExampleCompletionRequirementNotify, // given text: You can do the review after the employee completed his/her AspNetCoreExample.
 
         // ec = Employee Completed
-        ecmoonlightEmailSubject                     , // given text: {firstName} {middleName} {lastName} completed the AspNetCoreExample
-        ecmoonlightEmailBody                        , // given text: Next step is do the manager's <a href='https://{subdomain}.{domain}/moonlight/{moonlightId}/{moonlightSession}?openedByManager=true'>AspNetCoreExample part</a>. Anytime, you can <a href="https://{subdomain}.{domain}.com/configuration/moonlight/manager">review all</a> the applicants who already completed their AspNetCoreExample.
+        ecAspNetCoreExampleEmailSubject                     , // given text: {firstName} {middleName} {lastName} completed the AspNetCoreExample
+        ecAspNetCoreExampleEmailBody                        , // given text: Next step is do the manager's <a href='https://{subdomain}.{domain}/aspNetCoreExample/{aspNetCoreExampleId}/{aspNetCoreExampleSession}?openedByManager=true'>AspNetCoreExample part</a>. Anytime, you can <a href="https://{subdomain}.{domain}.com/configuration/aspNetCoreExample/manager">review all</a> the applicants who already completed their AspNetCoreExample.
 
         passwordsMustBeSameNotify                 , // given text: Password and confirmation password must be same
         passwordRequirementNotify                 , // given text: Password must not be empty. It must be greater than 6 characters. 
 
         _fieldMention                              , // given text: Use @ to load the field list. Similar to Facebook's mention.        
         _passwordRequirement                       , // given text: Minimum 8 characters at least 1 Alphabet, 1 Number and 1 Special Character
-        _appName                                   , // given text: Simple moonlight
+        _appName                                   , // given text: Simple aspNetCoreExample
         _checkInputs                               , // given text: Please check your input
         _isoAlpha2CodeTaken                        , // given text: ISO Alpha 2 Code is already taken. Please Change. 
         _isoAlpha3CodeTaken                        , // given text: ISO Alpha 3 Code is already taken, Please Change 

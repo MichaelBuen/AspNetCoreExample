@@ -24,7 +24,7 @@
     {
         IDddFactory _dddF;
 
-        public UserStore(IDddFactory dddF) 
+        public UserStore(IDddFactory dddF)
         {
             _dddF = dddF;
         }
@@ -63,7 +63,9 @@
 
             using (var ddd = _dddF.OpenDdd())
             {
-                return await ddd.GetAsync<User>(int.Parse(userId));
+                var user = await ddd.GetAsync<User>(int.Parse(userId));
+
+                return user;
             }
         }
 
@@ -85,7 +87,7 @@
 
 
         Task<string> IUserStore<User>.GetNormalizedUserNameAsync(
-            User user,CancellationToken cancellationToken
+            User user, CancellationToken cancellationToken
         ) => Task.FromResult(user.NormalizedUserName);
 
 
@@ -119,7 +121,7 @@
 
             using (var ddd = _dddF.OpenDddForChanges())
             {
-                var au = ddd.JustKey<User>(user.Id);
+                var au = await ddd.GetAsync<User>(user.Id);
 
                 au.UpdateFromDetached(user);
 
@@ -166,7 +168,7 @@
             }
         }
 
-        Task<string> IUserEmailStore<User>.GetNormalizedEmailAsync(User user, CancellationToken cancellationToken) => 
+        Task<string> IUserEmailStore<User>.GetNormalizedEmailAsync(User user, CancellationToken cancellationToken) =>
             Task.FromResult(user.NormalizedEmail);
 
         Task IUserEmailStore<User>.SetNormalizedEmailAsync(
@@ -185,7 +187,7 @@
             return Task.FromResult(0);
         }
 
-        Task<string> IUserPhoneNumberStore<User>.GetPhoneNumberAsync(User user, CancellationToken cancellationToken) => 
+        Task<string> IUserPhoneNumberStore<User>.GetPhoneNumberAsync(User user, CancellationToken cancellationToken) =>
             Task.FromResult(user.PhoneNumber);
 
 
@@ -209,7 +211,7 @@
             return Task.FromResult(0);
         }
 
-        Task<bool> IUserTwoFactorStore<User>.GetTwoFactorEnabledAsync(User user, CancellationToken cancellationToken) => 
+        Task<bool> IUserTwoFactorStore<User>.GetTwoFactorEnabledAsync(User user, CancellationToken cancellationToken) =>
             Task.FromResult(user.TwoFactorEnabled);
 
 
@@ -221,11 +223,11 @@
             return Task.FromResult(0);
         }
 
-        Task<string> IUserPasswordStore<User>.GetPasswordHashAsync(User user, CancellationToken cancellationToken) => 
+        Task<string> IUserPasswordStore<User>.GetPasswordHashAsync(User user, CancellationToken cancellationToken) =>
             Task.FromResult(user.PasswordHash);
 
 
-        Task<bool> IUserPasswordStore<User>.HasPasswordAsync(User user, CancellationToken cancellationToken) => 
+        Task<bool> IUserPasswordStore<User>.HasPasswordAsync(User user, CancellationToken cancellationToken) =>
             Task.FromResult(user.PasswordHash != null);
 
         async Task IUserRoleStore<User>.AddToRoleAsync(User user, string roleName, CancellationToken cancellationToken)
@@ -260,7 +262,7 @@
 
             using (var ddd = _dddF.OpenDddForChanges())
             {
-                var userLoaded = ddd.JustKey<User>(user.Id);
+                var userLoaded = await ddd.GetAsync<User>(user.Id);
 
                 await userLoaded.RemoveRoleAsync(roleName);
 

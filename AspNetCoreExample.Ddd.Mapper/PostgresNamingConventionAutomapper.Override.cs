@@ -21,7 +21,7 @@
             //});
 
 
-            //mapper.Class<Ddd.moonlightDomain.BRHave>(x =>
+            //mapper.Class<Ddd.aspNetCoreExampleDomain.BRHave>(x =>
             //{
             //    x.Id(id => id.Field, idMapper =>
             //    {

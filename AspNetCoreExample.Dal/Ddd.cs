@@ -1,15 +1,14 @@
-﻿using System;
-using System.Linq;
-
-using NHibernate;
-
-using Dapper;
-
-using System.Threading.Tasks;
-using System.Collections.Generic;
-
-namespace AspNetCoreExample.Dal
+﻿namespace AspNetCoreExample.Dal
 {
+    using System;
+    using System.Linq;
+
+    using NHibernate;
+
+    using Dapper;
+
+    using System.Threading.Tasks;
+    using System.Collections.Generic;
 
 
     // not public, program to interface instead: http://www.ienablemuch.com/2014/10/var-abuse.html
@@ -22,13 +21,9 @@ namespace AspNetCoreExample.Dal
         bool _transactionCompleted;
 
 
-        internal Ddd(NHibernate.ISessionFactory sessionFactory) 
-            : this(sessionFactory, withTransaction: false)
-        {                        
-        }
+        internal Ddd(NHibernate.ISessionFactory sessionFactory) : this(sessionFactory, withTransaction: false) { }
 
-
-        internal Ddd(ISessionFactory sessionFactory, bool withTransaction) 
+        internal Ddd(ISessionFactory sessionFactory, bool withTransaction)
         {
             _session = sessionFactory.OpenSession();
             _withTransaction = withTransaction;
@@ -39,13 +34,13 @@ namespace AspNetCoreExample.Dal
         }
 
         IQueryable<TDomainModel> IDdd.Query<TDomainModel>()
-        {            
+        {
             return _session.Query<TDomainModel>();
         }
 
 
         IQueryOver<TDomainModel> IDdd.QueryOver<TDomainModel>()
-        {            
+        {
             return _session.QueryOver<TDomainModel>();
         }
 
@@ -59,16 +54,16 @@ namespace AspNetCoreExample.Dal
 
 
         TDomainModel IDdd.Get<TDomainModel>(object id)
-        {            
+        {
             return _session.Get<TDomainModel>(id);
         }
 
         async Task<TDomainModel> IDdd.GetAsync<TDomainModel>(object id)
-        {            
+        {
             return await _session.GetAsync<TDomainModel>(id);
         }
 
-        TDomainModel IDdd.JustKey<TDomainModel>(object id)
+        TDomainModel IDdd.ReferenceTo<TDomainModel>(object id)
         {
             if (id == null)
                 return default(TDomainModel);
@@ -76,10 +71,16 @@ namespace AspNetCoreExample.Dal
                 return _session.Load<TDomainModel>(id);
         }
 
-
+        async Task<TDomainModel> IDdd.ReferenceToAsync<TDomainModel>(object id)
+        {
+            if (id == null)
+                return default(TDomainModel);
+            else
+                return await _session.LoadAsync<TDomainModel>(id);
+        }
 
         void IDdd.Persist<TDomainModel>(TDomainModel transientObject)
-        {                                        
+        {
             _session.Persist(transientObject);
         }
 
@@ -91,7 +92,7 @@ namespace AspNetCoreExample.Dal
 
         void IDdd.Evict<TDomainModel>(TDomainModel obj)
         {
-            _session.Evict(obj);            
+            _session.Evict(obj);
         }
 
 
@@ -104,23 +105,22 @@ namespace AspNetCoreExample.Dal
         {
             await _session.DeleteAsync(obj);
         }
-        
+
 
         void IDisposable.Dispose()
         {
             // http://www.hibernatingrhinos.com/products/nhprof/learn/alert/donotuseimplicittransactions
 
             if (_withTransaction)
-            {         
-                if (_transactionCompleted)                    
+            {
+                if (_transactionCompleted)
                     _transaction.Dispose();
             }
 
-            
             _session.Dispose();
         }
 
-        
+
         TDomainModel IDdd.Clone<TDomainModel>(TDomainModel transientObj)
         {
             return _session.Merge(transientObj);
@@ -145,15 +145,26 @@ namespace AspNetCoreExample.Dal
         {
             if (!_withTransaction)
             {
-				throw new AspNetCoreExampleException("Developer error. Cannot save changes if access is not opened for changes. Use OpenAccessForChanges().");
+                throw new AspNetCoreExampleException("Developer error. Cannot save changes if access is not opened for changes. Use OpenAccessForChanges().");
             }
 
 
-            if (_session.IsDirty())
-            {   
-                _transactionCompleted = true;
-                _transaction.Commit();
-            }
+            // Removed the IsDirty check on Commit, CommitAsync, Rollback, RollbackAsync.
+            // NHibernate can't detect dirtiness if the changes is made outside of NHibernate,
+            // e.g., via Dapper. Also dirtiness can't be detected even 
+            // from NHibernate 5's IQueryable DML.
+            // e.g.,
+            /*  
+                await ddd.Query<Ddd.JobDomain.Profile>()
+               .Where(x => x.UserFk == userId)
+               .UpdateAsync(p => new Profile { AddressLine1 = dto.AddressLine1 }, cancellationToken);
+            */
+
+            //if (_session.IsDirty())
+            //{   
+            _transactionCompleted = true;
+            _transaction.Commit();
+            // }
         }
 
 
@@ -161,47 +172,35 @@ namespace AspNetCoreExample.Dal
         {
             if (!_withTransaction)
             {
-				throw new AspNetCoreExampleException("Developer error. Cannot save changes if access is not opened for changes. Use OpenAccessForChanges().");
+                throw new AspNetCoreExampleException("Developer error. Cannot save changes if access is not opened for changes. Use OpenAccessForChanges().");
             }
 
-
-            if (await _session.IsDirtyAsync())
-            {
-                _transactionCompleted = true;
-                await _transaction.CommitAsync();
-            }
+            _transactionCompleted = true;
+            await _transaction.CommitAsync();
         }
 
         void IDdd.Rollback()
         {
             if (!_withTransaction)
             {
-				throw new AspNetCoreExampleException("Developer error. Cannot save changes if access is not opened for changes. Use OpenAccessForChanges().");
+                throw new AspNetCoreExampleException("Developer error. Cannot save changes if access is not opened for changes. Use OpenAccessForChanges().");
             }
 
-
-            if (_session.IsDirty())
-            {
-                _transactionCompleted = true;
-                _transaction.Rollback();
-            }
+            _transactionCompleted = true;
+            _transaction.Rollback();
         }
 
         async Task IDdd.RollbackAsync()
         {
             if (!_withTransaction)
             {
-				throw new AspNetCoreExampleException("Developer error. Cannot save changes if access is not opened for changes. Use OpenAccessForChanges().");
+                throw new AspNetCoreExampleException("Developer error. Cannot save changes if access is not opened for changes. Use OpenAccessForChanges().");
             }
 
-
-            if (await _session.IsDirtyAsync())
-            {
-                _transactionCompleted = true;
-                await _transaction.RollbackAsync();
-            }
+            _transactionCompleted = true;
+            await _transaction.RollbackAsync();
         }
     }
-    
+
 }
 
