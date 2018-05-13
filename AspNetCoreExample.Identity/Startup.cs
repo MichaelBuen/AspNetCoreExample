@@ -9,8 +9,8 @@
     using Microsoft.Extensions.DependencyInjection;
 
     using AspNetCoreExample.Ddd.Connection;
-	using AspNetCoreExample.Identity.Data;
-	using AspNetCoreExample.Identity.Services;
+    using AspNetCoreExample.Identity.Data;
+    using AspNetCoreExample.Identity.Services;
 
     public class Startup
     {

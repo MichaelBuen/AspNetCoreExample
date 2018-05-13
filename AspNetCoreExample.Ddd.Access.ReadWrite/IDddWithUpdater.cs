@@ -4,14 +4,14 @@
 
 namespace AspNetCoreExample.Ddd.Access.ReadWrite
 {
-	using System;
-	using System.Threading.Tasks;
+    using System;
+    using System.Threading.Tasks;
 
-	using AspNetCoreExample.Ddd.Access.Read;
+    using AspNetCoreExample.Ddd.Access.Read;
 
-	public interface IDddWithUpdater: IDdd, IDisposable
+    public interface IDddWithUpdater: IDdd, IDisposable
     {
-	   // See the Persist notes at the bottom of this code.
+       // See the Persist notes at the bottom of this code.
         void Persist<TDomainModel>(TDomainModel transientObject) where TDomainModel : class;
         Task PersistAsync<TDomainModel>(TDomainModel transientObject) where TDomainModel : class;
         //void Flush();
@@ -56,12 +56,12 @@ namespace AspNetCoreExample.Ddd.Access.ReadWrite
     /*
 
     For INSERT
-	* Merge and Persist are both OK
+    * Merge and Persist are both OK
 
 
     For UPDATE
 
-	* Merge is ok for UPDATE if the detached object carries the full state of the entity, 
+    * Merge is ok for UPDATE if the detached object carries the full state of the entity, 
         as Merge doesn't need to read the database prior to updating. 
         No overhead of reading the database when updating, regardless of having second level cache or not.
         However, Merge is risky if the detached object doesn't carry the full state, as the previously written fields

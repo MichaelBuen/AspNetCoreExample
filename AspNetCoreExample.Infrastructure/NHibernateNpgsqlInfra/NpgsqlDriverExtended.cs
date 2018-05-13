@@ -6,9 +6,9 @@
     using Npgsql;
 
     public class NpgsqlDriverExtended : NHibernate.Driver.NpgsqlDriver
-    {		
-		protected override void InitializeParameter(DbParameter dbParam, string name, SqlType sqlType)
-		{            
+    {        
+        protected override void InitializeParameter(DbParameter dbParam, string name, SqlType sqlType)
+        {            
             if (sqlType is NpgsqlExtendedSqlType && dbParam is NpgsqlParameter)
             {
                 this.InitializeParameter(dbParam as NpgsqlParameter, name, sqlType as NpgsqlExtendedSqlType);
@@ -17,7 +17,7 @@
             {
                 base.InitializeParameter(dbParam, name, sqlType);
             }
-		}
+        }
 
         protected virtual void InitializeParameter(NpgsqlParameter dbParam, string name, NpgsqlExtendedSqlType sqlType)
         {
@@ -31,5 +31,5 @@
             dbParam.NpgsqlDbType  = sqlType.NpgDbType;
         }
 
-	}// class
+    }// class
 }

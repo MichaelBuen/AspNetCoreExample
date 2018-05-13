@@ -1,18 +1,18 @@
 ﻿namespace AspNetCoreExample.Ddd.Access.Read
 {
-	using System;
-	using System.Collections.Generic;
-	using System.Linq;
-	using System.Threading.Tasks;
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Threading.Tasks;
 
-	using Dapper;
-	using NHibernate;
-    	  
-	public class Ddd: IDdd
+    using Dapper;
+    using NHibernate;
+          
+    public class Ddd: IDdd
     {
-		protected readonly ISession _session;
+        protected readonly ISession _session;
                
-		public Ddd(ISessionFactory sessionFactory) => _session = sessionFactory.OpenSession();            
+        public Ddd(ISessionFactory sessionFactory) => _session = sessionFactory.OpenSession();            
         
         IQueryable<TDomainModel> IDdd.Query<TDomainModel>() => _session.Query<TDomainModel>();
 
@@ -53,9 +53,9 @@
                 return await _session.LoadAsync<TDomainModel>(id);
         }
 
-		void IDdd.EagerlyLoad<TDomainModel>(TDomainModel model) 
+        void IDdd.EagerlyLoad<TDomainModel>(TDomainModel model) 
             => NHibernateUtil.Initialize(model);        
         
-		void IDisposable.Dispose() => _session.Dispose();
+        void IDisposable.Dispose() => _session.Dispose();
     }
 }

@@ -1,12 +1,12 @@
 ﻿namespace AspNetCoreExample.Ddd.Access.Read
 {
-	using System;
+    using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
 
 
-	public interface IDdd: IDisposable
+    public interface IDdd: IDisposable
     {
         /// <summary>
         /// Query must not be used on application layer (e.g., MVC, Web API).
@@ -47,8 +47,8 @@
         /// <summary>
         /// Renamed from Load to Map.
         /// The name Load gives the impression that it always read the object from the database,
-		/// when in fact most of the time, it is just used for mapping
-		/// an identity/foreignkey to an object.
+        /// when in fact most of the time, it is just used for mapping
+        /// an identity/foreignkey to an object.
         /// </summary>
         /// <typeparam name="TDomainModel"></typeparam>
         /// <param name="id"></param>
@@ -56,7 +56,7 @@
         TDomainModel Map<TDomainModel>(object id) where TDomainModel : class;
         Task<TDomainModel> MapAsync<TDomainModel>(object id) where TDomainModel : class;
 
-		// http://nhibernate.info/doc/howto/various/lazy-loading-eager-loading.html
+        // http://nhibernate.info/doc/howto/various/lazy-loading-eager-loading.html
         void EagerlyLoad<TDomainModel>(TDomainModel model);
     }       
 }
