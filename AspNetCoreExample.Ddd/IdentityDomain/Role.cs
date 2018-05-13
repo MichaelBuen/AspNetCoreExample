@@ -4,8 +4,8 @@
     using System.Collections.ObjectModel;
     using System.Linq;
     using System.Threading.Tasks;
-    using Microsoft.AspNetCore.Identity;
-    using NHibernate.Linq;
+    
+	using Microsoft.AspNetCore.Identity;
 
     public class Role : IdentityRole<int>
     {
@@ -36,7 +36,7 @@
                     where user.Roles.AsQueryable().Any(role => role.NormalizedName == normalizedRoleName)
                     select user;
 
-            return await criteria.ToListAsync();
+            return await criteria.ToListAsyncOk();
         }
     }
 }

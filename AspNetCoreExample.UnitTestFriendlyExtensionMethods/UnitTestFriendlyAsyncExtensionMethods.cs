@@ -1,13 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Threading;
-using System.Threading.Tasks;
-using NHibernate.Linq;
-
-namespace AspNetCoreExample
+﻿namespace AspNetCoreExample
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Linq.Expressions;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using NHibernate.Linq;
+
+
     public static class UnitTestFriendlyAsyncExtensionMethods
     {
         // TODO: Create unit-test-friendly wrappers for all async Linq extension methods
@@ -43,7 +44,7 @@ namespace AspNetCoreExample
                 query.SingleOrDefault(predicate);
 
 
-        public static async Task<IEnumerable<T>> ToListAsyncOk<T>(
+        public static async Task<List<T>> ToListAsyncOk<T>(
             this IQueryable<T> query,
             CancellationToken cancellationToken = default)
             =>
@@ -51,5 +52,24 @@ namespace AspNetCoreExample
                 await LinqExtensionMethods.ToListAsync(query, cancellationToken)
             :
                 query.ToList();
+
+        public static async Task<bool> AnyAsyncOk<T>(
+            this IQueryable<T> query,
+            CancellationToken cancellationToken = default)
+            =>
+            query.Provider.GetType() == typeof(NHibernate.Linq.DefaultQueryProvider) ?
+                await LinqExtensionMethods.AnyAsync(query, cancellationToken)
+            :
+                query.Any();
+
+        public static async Task<bool> AnyAsyncOk<T>(
+            this IQueryable<T> query,
+            Expression<Func<T, bool>> predicate,
+            CancellationToken cancellationToken = default)
+            =>
+            query.Provider.GetType() == typeof(NHibernate.Linq.DefaultQueryProvider) ?
+                await LinqExtensionMethods.AnyAsync(query, predicate, cancellationToken)
+            :
+                query.Any(predicate);
     }
 }

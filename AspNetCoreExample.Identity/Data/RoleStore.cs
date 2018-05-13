@@ -7,9 +7,7 @@
     using Microsoft.Extensions.Configuration;
 
     using AspNetCoreExample.Ddd.Connection;
-	using AspNetCoreExample.Ddd.IdentityDomain;
-
-    using NHibernate.Linq;
+    using AspNetCoreExample.Ddd.IdentityDomain;
 
     public class RoleStore : IRoleStore<Role>
     {
@@ -43,8 +41,6 @@
 
                 await ddd.CommitAsync();
             }
-
-
 
             return IdentityResult.Success;
         }
@@ -110,7 +106,7 @@
             {
                 var role =
                     await ddd.Query<Role>()
-                    .SingleOrDefaultAsync(r => r.NormalizedName == normalizedRoleName);
+                    .SingleOrDefaultAsyncOk(r => r.NormalizedName == normalizedRoleName);
 
                 return role;
             }

@@ -8,8 +8,6 @@
 
     using Microsoft.AspNetCore.Identity;
 
-    using NHibernate.Linq;
-
     public class User : IdentityUser<int>
     {
         /// <summary>
@@ -60,11 +58,11 @@
         }
 
         public async Task<IList<string>> GetRoleNamesAsync() =>
-            await this.Roles.AsQueryable().Select(r => r.Name).ToListAsync();
+            await this.Roles.AsQueryable().Select(r => r.Name).ToListAsyncOk();
 
         public async Task AddRole(Role roleToAdd)
         {
-            var isExisting = await this.Roles.AsQueryable().AnyAsync(role => role == roleToAdd);
+            var isExisting = await this.Roles.AsQueryable().AnyAsyncOk(role => role == roleToAdd);
 
             if (!isExisting)
             {
@@ -89,7 +87,7 @@
 
         public async Task<bool> IsInRole(string roleName) =>
             await this.Roles.AsQueryable()
-            .AnyAsync(role => role.NormalizedName == roleName.ToUpper());
+            .AnyAsyncOk(role => role.NormalizedName == roleName.ToUpper());
 
 
         public void SetTwoFactorEnabled(bool enabled) => this.TwoFactorEnabled = enabled;
@@ -127,7 +125,7 @@
         public async static Task<User> FindByLoginAsync(
             IQueryable<User> users, string loginProvider, string providerKey
         ) =>
-            await users.SingleOrDefaultAsync(au =>
+            await users.SingleOrDefaultAsyncOk(au =>
                 au.ExternalLogins.Any(el => el.LoginProvider == loginProvider && el.ProviderKey == providerKey)
             );
 
@@ -143,7 +141,7 @@
             // The cache of a user's external logins gets trashed when another user updates his/her external logins.
             // Explore how to make collection caching more robust. Disable for the meantime.
             // .CacheableOk() 
-            .ToListAsync();
+            .ToListAsyncOk();
     }
 
     public class ExternalLogin

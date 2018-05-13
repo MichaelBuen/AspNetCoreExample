@@ -1,4 +1,4 @@
-﻿Moonlighting.Ddd.Accessor 
+﻿ASpNetCoreExample.Ddd.Accessor 
 =========================
 
 

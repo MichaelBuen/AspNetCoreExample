@@ -10,7 +10,6 @@
     using AspNetCoreExample.Ddd.Connection;
     using AspNetCoreExample.Ddd.IdentityDomain;
 
-    using NHibernate.Linq;
 
     public class UserStore :
         IUserStore<User>,
@@ -75,7 +74,7 @@
             {
                 var au =
                     await ddd.Query<User>()
-                            .SingleOrDefaultAsync(u => u.NormalizedUserName == normalizedUserName);
+                            .SingleOrDefaultAsyncOk(u => u.NormalizedUserName == normalizedUserName);
 
                 return au;
             }
@@ -154,7 +153,7 @@
             using (var ddd = this.DbFactory.OpenDdd())
             {
                 var au = await ddd.Query<User>()
-                            .SingleOrDefaultAsync(u => u.NormalizedEmail == normalizedEmail);
+                            .SingleOrDefaultAsyncOk(u => u.NormalizedEmail == normalizedEmail);
 
                 return au;
             }
@@ -230,7 +229,7 @@
             {
                 var roleByName =
                     await ddd.Query<Role>()
-                    .SingleOrDefaultAsync(role => role.Name == roleName);
+                    .SingleOrDefaultAsyncOk(role => role.Name == roleName);
 
                 if (roleByName == null)
                 {
