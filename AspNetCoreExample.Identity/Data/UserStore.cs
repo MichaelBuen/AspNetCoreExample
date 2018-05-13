@@ -8,7 +8,7 @@
     using Microsoft.AspNetCore.Identity;
 
     using AspNetCoreExample.Ddd.Connection;
-	using AspNetCoreExample.Ddd.IdentityDomain;
+    using AspNetCoreExample.Ddd.IdentityDomain;
 
     using NHibernate.Linq;
 
