@@ -2,14 +2,13 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
 
     using Microsoft.AspNetCore.Identity;
 
-    using AspNetCoreExample.Dal;
-    using AspNetCoreExample.Ddd.IdentityDomain;
+    using AspNetCoreExample.Ddd.Connection;
+	using AspNetCoreExample.Ddd.IdentityDomain;
 
     using NHibernate.Linq;
 
@@ -22,18 +21,15 @@
         IUserRoleStore<User>,
         IUserLoginStore<User>
     {
-        IDddFactory _dddF;
+        IDatabaseFactory DbFactory { get; }
 
-        public UserStore(IDddFactory dddF)
-        {
-            _dddF = dddF;
-        }
+        public UserStore(IDatabaseFactory dbFactory) => this.DbFactory = dbFactory;
 
         async Task<IdentityResult> IUserStore<User>.CreateAsync(User user, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            using (var ddd = _dddF.OpenDddForChanges())
+            using (var ddd = this.DbFactory.OpenDddForUpdate())
             {
                 await ddd.PersistAsync(user);
 
@@ -47,7 +43,7 @@
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            using (var ddd = _dddF.OpenDddForChanges())
+            using (var ddd = this.DbFactory.OpenDddForUpdate())
             {
                 await ddd.DeleteAggregateAsync(user);
 
@@ -61,7 +57,7 @@
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            using (var ddd = _dddF.OpenDdd())
+            using (var ddd = this.DbFactory.OpenDddForUpdate())
             {
                 var user = await ddd.GetAsync<User>(int.Parse(userId));
 
@@ -75,7 +71,7 @@
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            using (var ddd = _dddF.OpenDdd())
+            using (var ddd = this.DbFactory.OpenDdd())
             {
                 var au =
                     await ddd.Query<User>()
@@ -86,18 +82,15 @@
         }
 
 
-        Task<string> IUserStore<User>.GetNormalizedUserNameAsync(
-            User user, CancellationToken cancellationToken
-        ) => Task.FromResult(user.NormalizedUserName);
+        Task<string> IUserStore<User>.GetNormalizedUserNameAsync(User user, CancellationToken cancellationToken)
+            => Task.FromResult(user.NormalizedUserName);
 
 
-        Task<string> IUserStore<User>.GetUserIdAsync(
-            User user, CancellationToken cancellationToken
-        ) => Task.FromResult(user.Id.ToString());
+        Task<string> IUserStore<User>.GetUserIdAsync(User user, CancellationToken cancellationToken)
+            => Task.FromResult(user.Id.ToString());
 
-        Task<string> IUserStore<User>.GetUserNameAsync(
-            User user, CancellationToken cancellationToken
-        ) => Task.FromResult(user.UserName);
+        Task<string> IUserStore<User>.GetUserNameAsync(User user, CancellationToken cancellationToken)
+            => Task.FromResult(user.UserName);
 
 
         Task IUserStore<User>.SetNormalizedUserNameAsync(
@@ -119,7 +112,7 @@
             cancellationToken.ThrowIfCancellationRequested();
 
 
-            using (var ddd = _dddF.OpenDddForChanges())
+            using (var ddd = this.DbFactory.OpenDddForUpdate())
             {
                 var au = await ddd.GetAsync<User>(user.Id);
 
@@ -137,9 +130,8 @@
             return Task.FromResult(0);
         }
 
-        Task<string> IUserEmailStore<User>.GetEmailAsync(
-            User user, CancellationToken cancellationToken
-        ) => Task.FromResult(user.Email);
+        Task<string> IUserEmailStore<User>.GetEmailAsync(User user, CancellationToken cancellationToken)
+            => Task.FromResult(user.Email);
 
         Task<bool> IUserEmailStore<User>.GetEmailConfirmedAsync(
             User user, CancellationToken cancellationToken
@@ -159,7 +151,7 @@
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            using (var ddd = _dddF.OpenDddForChanges())
+            using (var ddd = this.DbFactory.OpenDdd())
             {
                 var au = await ddd.Query<User>()
                             .SingleOrDefaultAsync(u => u.NormalizedEmail == normalizedEmail);
@@ -168,8 +160,8 @@
             }
         }
 
-        Task<string> IUserEmailStore<User>.GetNormalizedEmailAsync(User user, CancellationToken cancellationToken) =>
-            Task.FromResult(user.NormalizedEmail);
+        Task<string> IUserEmailStore<User>.GetNormalizedEmailAsync(User user, CancellationToken cancellationToken)
+            => Task.FromResult(user.NormalizedEmail);
 
         Task IUserEmailStore<User>.SetNormalizedEmailAsync(
             User user, string normalizedEmail, CancellationToken cancellationToken
@@ -187,8 +179,8 @@
             return Task.FromResult(0);
         }
 
-        Task<string> IUserPhoneNumberStore<User>.GetPhoneNumberAsync(User user, CancellationToken cancellationToken) =>
-            Task.FromResult(user.PhoneNumber);
+        Task<string> IUserPhoneNumberStore<User>.GetPhoneNumberAsync(User user, CancellationToken cancellationToken)
+            => Task.FromResult(user.PhoneNumber);
 
 
         Task<bool> IUserPhoneNumberStore<User>.GetPhoneNumberConfirmedAsync(
@@ -211,8 +203,8 @@
             return Task.FromResult(0);
         }
 
-        Task<bool> IUserTwoFactorStore<User>.GetTwoFactorEnabledAsync(User user, CancellationToken cancellationToken) =>
-            Task.FromResult(user.TwoFactorEnabled);
+        Task<bool> IUserTwoFactorStore<User>.GetTwoFactorEnabledAsync(User user, CancellationToken cancellationToken)
+            => Task.FromResult(user.TwoFactorEnabled);
 
 
         Task IUserPasswordStore<User>.SetPasswordHashAsync(
@@ -223,18 +215,18 @@
             return Task.FromResult(0);
         }
 
-        Task<string> IUserPasswordStore<User>.GetPasswordHashAsync(User user, CancellationToken cancellationToken) =>
-            Task.FromResult(user.PasswordHash);
+        Task<string> IUserPasswordStore<User>.GetPasswordHashAsync(User user, CancellationToken cancellationToken)
+            => Task.FromResult(user.PasswordHash);
 
 
-        Task<bool> IUserPasswordStore<User>.HasPasswordAsync(User user, CancellationToken cancellationToken) =>
-            Task.FromResult(user.PasswordHash != null);
+        Task<bool> IUserPasswordStore<User>.HasPasswordAsync(User user, CancellationToken cancellationToken)
+            => Task.FromResult(user.PasswordHash != null);
 
         async Task IUserRoleStore<User>.AddToRoleAsync(User user, string roleName, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            using (var ddd = _dddF.OpenDddForChanges())
+            using (var ddd = this.DbFactory.OpenDddForUpdate())
             {
                 var roleByName =
                     await ddd.Query<Role>()
@@ -260,7 +252,7 @@
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            using (var ddd = _dddF.OpenDddForChanges())
+            using (var ddd = this.DbFactory.OpenDddForUpdate())
             {
                 var userLoaded = await ddd.GetAsync<User>(user.Id);
 
@@ -274,7 +266,7 @@
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            using (var ddd = _dddF.OpenDdd())
+            using (var ddd = this.DbFactory.OpenDdd())
             {
                 var userGot = await ddd.GetAsync<User>(user.Id);
 
@@ -288,7 +280,7 @@
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            using (var ddd = _dddF.OpenDdd())
+            using (var ddd = this.DbFactory.OpenDdd())
             {
                 var userGot = await ddd.GetAsync<User>(user.Id);
 
@@ -303,7 +295,7 @@
             cancellationToken.ThrowIfCancellationRequested();
 
 
-            using (var ddd = _dddF.OpenDdd())
+            using (var ddd = this.DbFactory.OpenDdd())
             {
                 string normalizedRoleName = roleName.ToUpper();
 
@@ -327,7 +319,7 @@
 
 
 
-            using (var ddd = _dddF.OpenDddForChanges())
+            using (var ddd = this.DbFactory.OpenDddForUpdate())
             {
                 var au = await ddd.GetAsync<User>(user.Id);
 
@@ -343,7 +335,7 @@
             string loginProvider, string providerKey, CancellationToken cancellationToken
         )
         {
-            using (var ddd = _dddF.OpenDdd())
+            using (var ddd = this.DbFactory.OpenDdd())
             {
                 var user = await User.FindByLoginAsync(ddd.Query<User>(), loginProvider, providerKey);
                 return user;
@@ -354,7 +346,7 @@
             User user, CancellationToken cancellationToken
         )
         {
-            using (var ddd = _dddF.OpenDdd())
+            using (var ddd = this.DbFactory.OpenDdd())
             {
                 var au = await ddd.GetAsync<User>(user.Id);
 
@@ -368,7 +360,7 @@
             User user, string loginProvider, string providerKey, CancellationToken cancellationToken
         )
         {
-            using (var ddd = _dddF.OpenDddForChanges())
+            using (var ddd = this.DbFactory.OpenDddForUpdate())
             {
                 var au = await ddd.GetAsync<User>(user.Id);
 

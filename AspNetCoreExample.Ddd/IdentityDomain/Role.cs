@@ -1,6 +1,7 @@
 ﻿namespace AspNetCoreExample.Ddd.IdentityDomain
 {
     using System.Collections.Generic;
+    using System.Collections.ObjectModel;
     using System.Linq;
     using System.Threading.Tasks;
     using Microsoft.AspNetCore.Identity;
@@ -12,7 +13,7 @@
         /// Many-to-many between Roles and Users
         /// </summary>
         /// <value>The users.</value>
-        public IEnumerable<User> Users { get; protected set; } = new List<User>();
+        public IEnumerable<User> Users { get; protected set; } = new Collection<User>();
 
 
         public Role(string roleName) : base(roleName) { }

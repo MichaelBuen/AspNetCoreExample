@@ -1,7 +1,7 @@
-﻿namespace AspNetCoreExample.Ddd.Mapper
-{
-    using System.Linq;
+﻿#define USECACHE
 
+namespace AspNetCoreExample.Ddd.Mapper
+{
     partial class PostgresNamingConventionAutomapper : NHibernate.Mapping.ByCode.ConventionModelMapper
     {
         internal PostgresNamingConventionAutomapper()
@@ -54,7 +54,7 @@
             mapper.BeforeMapJoinedSubclass += Mapper_BeforeMapJoinedSubclass;
 
 
-            MapManyToMany(mapper);          
+            MapManyToMany(mapper);            
             OverrideMapping(mapper);
         }
 
@@ -73,7 +73,7 @@
 
 
 
-            string fullName = type.FullName; // example: AspNetCoreExample.Ddd.IdentityDomain.User
+            string fullName = type.FullName; // example: AspNetCoreExample.Ddd.IdentityDomain.ApplicationUser
 
             var (schemaName, tableName) = fullName.GetTableMapping();
 
@@ -234,7 +234,7 @@
 
 
 #if USECACHE
-            propertyCustomizer.Cache(cacheMapping => cacheMapping.Usage(NHibernate.Mapping.ByCode.CacheUsage.ReadWrite));
+            bagPropertiesCustomizer.Cache(cacheMapping => cacheMapping.Usage(NHibernate.Mapping.ByCode.CacheUsage.ReadWrite));
 #endif
         }
 
@@ -254,7 +254,7 @@
             setPropertiesCustomizer.Lazy(NHibernate.Mapping.ByCode.CollectionLazy.Extra);
 
 #if USECACHE
-            propertyCustomizer.Cache(cacheMapping => cacheMapping.Usage(NHibernate.Mapping.ByCode.CacheUsage.ReadWrite));
+            setPropertiesCustomizer.Cache(cacheMapping => cacheMapping.Usage(NHibernate.Mapping.ByCode.CacheUsage.ReadWrite));
 #endif
         }
 

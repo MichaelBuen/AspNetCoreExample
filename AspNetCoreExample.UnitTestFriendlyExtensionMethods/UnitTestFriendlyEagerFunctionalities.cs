@@ -38,15 +38,15 @@ namespace AspNetCoreExample
         /// <param name="queryable">The queryable.</param>
         /// <param name="expression">The expression.</param>
         /// <returns></returns>
-		public static IFetchRequest<T, TRel> FetchOk<T, TRel>(
+        public static IFetchRequest<T, TRel> FetchOk<T, TRel>(
             this IQueryable<T> queryable,
             Expression<Func<T, TRel>> expression)
-        {
-            if (queryable is QueryableBase<T>)
-                return FetchHelper.Create(queryable.Fetch(expression));
-            else
-                return FetchHelper.CreateNonNH<T, TRel>(queryable);
-        }
+            =>
+            queryable is QueryableBase<T> ?
+                FetchHelper.Create(queryable.Fetch(expression))
+            :
+                FetchHelper.CreateNonNH<T, TRel>(queryable);
+
 
         /// <summary>
         /// Eager-loads a second-level projection of the specified queryable, 
@@ -58,15 +58,15 @@ namespace AspNetCoreExample
         /// <param name="queryable">The queryable.</param>
         /// <param name="expression">The expression.</param>
         /// <returns></returns>
-		public static IFetchRequest<T, TRel2> ThenFetchOk<T, TRel, TRel2>(
+        public static IFetchRequest<T, TRel2> ThenFetchOk<T, TRel, TRel2>(
             this IFetchRequest<T, TRel> queryable,
             Expression<Func<TRel, TRel2>> expression)
-        {
-            if (queryable is QueryableFetchHelper<T, TRel>)
-                return FetchHelper.CreateNonNH<T, TRel2>(queryable);
-            else
-                return FetchHelper.Create(queryable.ThenFetch(expression));
-        }
+            =>
+            queryable is QueryableFetchHelper<T, TRel> ?
+                FetchHelper.CreateNonNH<T, TRel2>(queryable)
+            :
+                FetchHelper.Create(queryable.ThenFetch(expression));
+
 
         /// <summary>
         /// Eager-loads a projection of the specified queryable, 
@@ -77,15 +77,14 @@ namespace AspNetCoreExample
         /// <param name="queryable">The queryable.</param>
         /// <param name="expression">The expression.</param>
         /// <returns></returns>
-		public static IFetchRequest<T, TRel> FetchManyOk<T, TRel>(
+        public static IFetchRequest<T, TRel> FetchManyOk<T, TRel>(
             this IQueryable<T> queryable,
             Expression<Func<T, IEnumerable<TRel>>> expression)
-        {
-            if (queryable is QueryableBase<T>)
-                return FetchHelper.Create(queryable.FetchMany(expression));
-            else
-                return FetchHelper.CreateNonNH<T, TRel>(queryable);
-        }
+            =>
+            queryable is QueryableBase<T> ?
+                FetchHelper.Create(queryable.FetchMany(expression))
+            :
+                FetchHelper.CreateNonNH<T, TRel>(queryable);
 
         /// <summary>
         /// Eager-loads a second-level projection of the specified queryable, 
@@ -97,17 +96,17 @@ namespace AspNetCoreExample
         /// <param name="queryable">The queryable.</param>
         /// <param name="expression">The expression.</param>
         /// <returns></returns>
-		public static IFetchRequest<T, TRel2> ThenFetchManyOk
+        public static IFetchRequest<T, TRel2> ThenFetchManyOk
             <T, TRel, TRel2>(
             this IFetchRequest<T, TRel> queryable,
             Expression<Func<TRel, IEnumerable<TRel2>>> expression)
-        {
-            if (queryable is QueryableFetchHelper<T, TRel>)
-                return FetchHelper.CreateNonNH<T, TRel2>(queryable);
-            else
-                return FetchHelper.Create(queryable.ThenFetchMany(expression));
-        }
-    }
+            =>
+            queryable is QueryableFetchHelper<T, TRel> ?
+                FetchHelper.CreateNonNH<T, TRel2>(queryable)
+            :
+                FetchHelper.Create(queryable.ThenFetchMany(expression));
+
+    } // class NHibernateExtensions
 
     /// <summary>
     /// Provides a wrapper for NHibernate's FetchRequest interface, 
@@ -116,10 +115,7 @@ namespace AspNetCoreExample
     /// </summary>
     /// <typeparam name="TQuery">The type of the query.</typeparam>
     /// <typeparam name="TFetch">The type of the fetch.</typeparam>
-    public interface IFetchRequest<TQuery, TFetch> :
-        INhFetchRequest<TQuery, TFetch>
-    {
-    }
+    public interface IFetchRequest<TQuery, TFetch> : INhFetchRequest<TQuery, TFetch> { }
 
     internal class NhFetchHelper<TQuery, TFetch> : IFetchRequest<TQuery, TFetch>
     {
@@ -127,9 +123,7 @@ namespace AspNetCoreExample
 
         //this is the real deal for NHibernate queries
         internal NhFetchHelper(INhFetchRequest<TQuery, TFetch> realFetchRequest)
-        {
-            this.realFetchRequest = realFetchRequest;
-        }
+            => this.realFetchRequest = realFetchRequest;
 
         /// <summary>
         /// Returns an enumerator that iterates through the collection.
@@ -139,10 +133,7 @@ namespace AspNetCoreExample
         /// be used to iterate through the collection.
         /// </returns>
         /// <filterpriority>1</filterpriority>
-        public IEnumerator<TQuery> GetEnumerator()
-        {
-            return (realFetchRequest).GetEnumerator();
-        }
+        public IEnumerator<TQuery> GetEnumerator() => realFetchRequest.GetEnumerator();
 
         /// <summary>
         /// Returns an enumerator that iterates through a collection.
@@ -152,10 +143,7 @@ namespace AspNetCoreExample
         /// that can be used to iterate through the collection.
         /// </returns>
         /// <filterpriority>2</filterpriority>
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return (realFetchRequest).GetEnumerator();
-        }
+        IEnumerator IEnumerable.GetEnumerator() => realFetchRequest.GetEnumerator();
 
         /// <summary>
         /// Gets the expression tree that is associated with the instance of 
@@ -165,10 +153,7 @@ namespace AspNetCoreExample
         /// The <see cref="T:System.Linq.Expressions.Expression"/> that is 
         /// associated with this instance of <see cref="T:System.Linq.IQueryable"/>.
         /// </returns>
-        public Expression Expression
-        {
-            get { return (realFetchRequest).Expression; }
-        }
+        public Expression Expression => realFetchRequest.Expression;
 
         /// <summary>
         /// Gets the type of the element(s) that are returned when the expression 
@@ -180,10 +165,7 @@ namespace AspNetCoreExample
         /// element(s) that are returned when the expression tree associated 
         /// with this object is executed.
         /// </returns>
-        public Type ElementType
-        {
-            get { return (realFetchRequest).ElementType; }
-        }
+        public Type ElementType => realFetchRequest.ElementType;
 
         /// <summary>
         /// Gets the query provider that is associated with this data source.
@@ -192,22 +174,15 @@ namespace AspNetCoreExample
         /// The <see cref="T:System.Linq.IQueryProvider"/> that is associated 
         /// with this data source.
         /// </returns>
-        public IQueryProvider Provider
-        {
-            get { return (realFetchRequest).Provider; }
-        }
+        public IQueryProvider Provider => realFetchRequest.Provider;
     }
 
-    internal class QueryableFetchHelper<TQuery, TFetch> :
-        IFetchRequest<TQuery, TFetch>
+    internal class QueryableFetchHelper<TQuery, TFetch> : IFetchRequest<TQuery, TFetch>
     {
         readonly IQueryable<TQuery> queryable;
 
         //for use against non-NH datastores
-        internal QueryableFetchHelper(IQueryable<TQuery> queryable)
-        {
-            this.queryable = queryable;
-        }
+        internal QueryableFetchHelper(IQueryable<TQuery> queryable) => this.queryable = queryable;
 
         /// <summary>
         /// Returns an enumerator that iterates through the collection.
@@ -217,10 +192,7 @@ namespace AspNetCoreExample
         /// can be used to iterate through the collection.
         /// </returns>
         /// <filterpriority>1</filterpriority>
-        public IEnumerator<TQuery> GetEnumerator()
-        {
-            return (queryable).GetEnumerator();
-        }
+        public IEnumerator<TQuery> GetEnumerator() => queryable.GetEnumerator();
 
         /// <summary>
         /// Returns an enumerator that iterates through a collection.
@@ -230,10 +202,7 @@ namespace AspNetCoreExample
         /// be used to iterate through the collection.
         /// </returns>
         /// <filterpriority>2</filterpriority>
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return (queryable).GetEnumerator();
-        }
+        IEnumerator IEnumerable.GetEnumerator() => queryable.GetEnumerator();
 
         /// <summary>
         /// Gets the expression tree that is associated with the instance of 
@@ -243,10 +212,7 @@ namespace AspNetCoreExample
         /// The <see cref="T:System.Linq.Expressions.Expression"/> that is 
         /// associated with this instance of <see cref="T:System.Linq.IQueryable"/>.
         /// </returns>
-        public Expression Expression
-        {
-            get { return (queryable).Expression; }
-        }
+        public Expression Expression => queryable.Expression;
 
         /// <summary>
         /// Gets the type of the element(s) that are returned when the expression 
@@ -258,10 +224,7 @@ namespace AspNetCoreExample
         /// element(s) that are returned when the expression tree associated 
         /// with this object is executed.
         /// </returns>
-        public Type ElementType
-        {
-            get { return (queryable).ElementType; }
-        }
+        public Type ElementType => queryable.ElementType;
 
         /// <summary>
         /// Gets the query provider that is associated with this data source.
@@ -270,10 +233,7 @@ namespace AspNetCoreExample
         /// The <see cref="T:System.Linq.IQueryProvider"/> that is associated 
         /// with this data source.
         /// </returns>
-        public IQueryProvider Provider
-        {
-            get { return (queryable).Provider; }
-        }
+        public IQueryProvider Provider => queryable.Provider;
     }
 
     /// <summary>
@@ -282,22 +242,13 @@ namespace AspNetCoreExample
     /// </summary>
     internal static class FetchHelper
     {
-        public static NhFetchHelper<TQuery, TFetch> Create<TQuery, TFetch>(
-            INhFetchRequest<TQuery, TFetch> nhFetch)
-        {
-            return new NhFetchHelper<TQuery, TFetch>(nhFetch);
-        }
+        public static NhFetchHelper<TQuery, TFetch> Create<TQuery, TFetch>(INhFetchRequest<TQuery, TFetch> nhFetch)
+            => new NhFetchHelper<TQuery, TFetch>(nhFetch);
 
-        public static NhFetchHelper<TQuery, TFetch> Create<TQuery, TFetch>(
-            IFetchRequest<TQuery, TFetch> nhFetch)
-        {
-            return new NhFetchHelper<TQuery, TFetch>(nhFetch);
-        }
+        public static NhFetchHelper<TQuery, TFetch> Create<TQuery, TFetch>(IFetchRequest<TQuery, TFetch> nhFetch)
+            => new NhFetchHelper<TQuery, TFetch>(nhFetch);
 
-        public static IFetchRequest<TQuery, TRel> CreateNonNH<TQuery, TRel>(
-            IQueryable<TQuery> queryable)
-        {
-            return new QueryableFetchHelper<TQuery, TRel>(queryable);
-        }
+        public static IFetchRequest<TQuery, TRel> CreateNonNH<TQuery, TRel>(IQueryable<TQuery> queryable)
+            => new QueryableFetchHelper<TQuery, TRel>(queryable);
     }
 }

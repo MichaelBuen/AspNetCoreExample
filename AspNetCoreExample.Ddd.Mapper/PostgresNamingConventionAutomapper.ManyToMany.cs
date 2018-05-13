@@ -1,4 +1,5 @@
-﻿namespace AspNetCoreExample.Ddd.Mapper
+﻿
+namespace AspNetCoreExample.Ddd.Mapper
 {
     partial class PostgresNamingConventionAutomapper : NHibernate.Mapping.ByCode.ConventionModelMapper
     {

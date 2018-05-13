@@ -2,27 +2,27 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Collections.ObjectModel;
     using System.Linq;
     using System.Threading.Tasks;
 
     using Microsoft.AspNetCore.Identity;
-	using AspNetCoreExample;
-	using NHibernate.Linq;
+
+    using NHibernate.Linq;
 
     public class User : IdentityUser<int>
     {
-
         /// <summary>
         ///  One-to-many external logins
         /// </summary>
         /// <value>The external logins.</value>
-        public IEnumerable<ExternalLogin> ExternalLogins { get; protected set; } = new List<ExternalLogin>();
+        public IEnumerable<ExternalLogin> ExternalLogins { get; protected set; } = new Collection<ExternalLogin>();
 
         /// <summary>
         /// Many-to-many between Users and Roles
         /// </summary>
         /// <value>The roles.</value>
-        public IEnumerable<Role> Roles { get; protected set; } = new List<Role>();
+        public IEnumerable<Role> Roles { get; protected set; } = new Collection<Role>();
 
 
         public User(string userName) : base(userName) { }
@@ -43,7 +43,7 @@
                 DisplayName = providerDisplayName
             };
 
-            this.ExternalLogins.AsList().Add(el);
+            this.ExternalLogins.AsCollection().Add(el);
         }
 
 
@@ -55,7 +55,7 @@
 
             if (externalLogin != null)
             {
-                this.ExternalLogins.AsList().Remove(externalLogin);
+                this.ExternalLogins.AsCollection().Remove(externalLogin);
             }
         }
 
@@ -68,7 +68,7 @@
 
             if (!isExisting)
             {
-                this.Roles.AsList().Add(roleToAdd);
+                this.Roles.AsCollection().Add(roleToAdd);
             }
         }
 
@@ -83,7 +83,7 @@
 
             if (role != null)
             {
-                this.Roles.AsList().Remove(role);
+                this.Roles.AsCollection().Remove(role);
             }
         }
 
@@ -140,6 +140,9 @@
                     el.DisplayName
                 )
             )
+            // The cache of a user's external logins gets trashed when another user updates his/her external logins.
+            // Explore how to make collection caching more robust. Disable for the meantime.
+            // .CacheableOk() 
             .ToListAsync();
     }
 
@@ -153,8 +156,8 @@
         // public int Id { get; protected set; }
 
         // Below is better as we don't need to expose primary key of child entities
-        // But the above could be useful if we want to directly delete based on Id 
-        // for performance concern.        
+        // But the above could be useful if we want to directly update, delete 
+        // based on Id, for performance concern. 
         protected int Id { get; set; }
 
         public string LoginProvider { get; internal protected set; } // provider: facebook, google, etc

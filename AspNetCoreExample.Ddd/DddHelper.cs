@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace AspNetCoreExample.Ddd
+﻿namespace AspNetCoreExample.Ddd
 {
+    using System.Collections.Generic;
+
     static class DddHelper
-    {        
-        internal static IList<T> AsList<T>(this IEnumerable<T> enumerable) => (IList<T>)enumerable;
+    {
+        internal static ICollection<T> AsCollection<T>(this IEnumerable<T> enumerable) => (ICollection<T>)enumerable;
     }
 }

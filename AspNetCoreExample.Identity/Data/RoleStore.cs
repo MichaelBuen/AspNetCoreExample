@@ -6,29 +6,26 @@
     using Microsoft.AspNetCore.Identity;
     using Microsoft.Extensions.Configuration;
 
-    using AspNetCoreExample.Dal;
-    using AspNetCoreExample.Ddd.IdentityDomain;
+    using AspNetCoreExample.Ddd.Connection;
+	using AspNetCoreExample.Ddd.IdentityDomain;
 
     using NHibernate.Linq;
 
     public class RoleStore : IRoleStore<Role>
     {
-        IDddFactory _dddF;
+        IDatabaseFactory DbFactory { get; }
 
-        public RoleStore(IConfiguration configuration, IDddFactory daf)
-        {
-            _dddF = daf;
-        }
+        public RoleStore(IConfiguration configuration, IDatabaseFactory dbFactory) => this.DbFactory = dbFactory;
 
         async Task<IdentityResult> IRoleStore<Role>.CreateAsync(Role role, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            using (var ddd = _dddF.OpenDdd())
+            using (var db = this.DbFactory.OpenDddForUpdate())
             {
-                await ddd.PersistAsync(role);
+                await db.PersistAsync(role);
 
-                await ddd.CommitAsync();
+                await db.CommitAsync();
             }
 
             return IdentityResult.Success;
@@ -38,7 +35,7 @@
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            using (var ddd = _dddF.OpenDdd())
+            using (var ddd = this.DbFactory.OpenDddForUpdate())
             {
                 var roleGot = await ddd.GetAsync<Role>(role.Id);
 
@@ -56,11 +53,11 @@
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            using (var ddd = _dddF.OpenDddForChanges())
+            using (var db = this.DbFactory.OpenDddForUpdate())
             {
-                await ddd.DeleteAggregateAsync(role);
+                await db.DeleteAggregateAsync(role);
 
-                await ddd.CommitAsync();
+                await db.CommitAsync();
             }
 
             return IdentityResult.Success;
@@ -72,7 +69,7 @@
 
         Task<string> IRoleStore<Role>.GetRoleNameAsync(Role role, CancellationToken cancellationToken) =>
             Task.FromResult(role.Name);
-        
+
 
         Task IRoleStore<Role>.SetRoleNameAsync(Role role, string roleName, CancellationToken cancellationToken)
         {
@@ -81,7 +78,7 @@
         }
 
         Task<string> IRoleStore<Role>.GetNormalizedRoleNameAsync(Role role, CancellationToken cancellationToken) =>
-            Task.FromResult(role.NormalizedName);        
+            Task.FromResult(role.NormalizedName);
 
         Task IRoleStore<Role>.SetNormalizedRoleNameAsync(
             Role role, string normalizedName, CancellationToken cancellationToken
@@ -95,7 +92,7 @@
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            using (var ddd = _dddF.OpenDdd())
+            using (var ddd = this.DbFactory.OpenDdd())
             {
                 var role = await ddd.GetAsync<Role>(roleId);
 
@@ -109,7 +106,7 @@
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            using (var ddd = _dddF.OpenDdd())
+            using (var ddd = this.DbFactory.OpenDdd())
             {
                 var role =
                     await ddd.Query<Role>()

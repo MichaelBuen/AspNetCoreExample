@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Dapper" Version="1.50.4" />
+    <PackageReference Include="NHibernate" Version="5.1.2" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\AspNetCoreExample.Ddd.Access.Read\AspNetCoreExample.Ddd.Access.Read.csproj" />
+    <ProjectReference Include="..\AspNetCoreExample.Ddd.Access.ReadWrite\AspNetCoreExample.Ddd.Access.ReadWrite.csproj" />
+  </ItemGroup>
+</Project>

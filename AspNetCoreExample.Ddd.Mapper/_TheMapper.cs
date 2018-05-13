@@ -1,33 +1,23 @@
 ﻿#define DEBUG
 
 // Uncomment this before deploying
-
-//#define USECACHE
+#define USECACHE
 
 
 
 using System.Runtime.CompilerServices;
 
+[assembly: InternalsVisibleTo("AspNetCoreExample.Test")]
+
 namespace AspNetCoreExample.Ddd.Mapper
 {
     using System.Linq;
 
-    using NHibernate;
     using NHibernate.Cfg;
 
 
     public static class TheMapper
     {
-        //static NHibernate.ISessionFactory _sessionFactory = Mapper.BuildSessionFactory();
-
-
-        //// call this on production
-        //public static NHibernate.ISessionFactory SessionFactory
-        //{
-        //    get { return _sessionFactory; }
-        //}
-
-
         public static NHibernate.ISessionFactory BuildSessionFactory(string connectionString, bool useUnitTest = false)
         {
             var mapper = new PostgresNamingConventionAutomapper(); //  NHibernate.Mapping.ByCode.ConventionModelMapper();
@@ -96,7 +86,7 @@ namespace AspNetCoreExample.Ddd.Mapper
                 // SysCache is not stable on unit testing
                 if (!useUnitTest)
                 {
-                    x.Provider<NHibernate.Caches.SysCache.SysCacheProvider>();
+                    x.Provider<NHibernate.Caches.CoreMemoryCache.CoreMemoryCacheProvider>();
 
                     // I don't know why SysCacheProvider is not stable on simultaneous unit testing, 
                     // might be SysCacheProvider is just giving one session factory, so simultaneous test see each other caches
@@ -104,8 +94,7 @@ namespace AspNetCoreExample.Ddd.Mapper
                 }
                 else
                 {
-                    // This is more stable in unit testing
-                    x.Provider<NHibernate.Cache.HashtableCacheProvider>();
+                    x.Provider<NHibernate.Caches.CoreMemoryCache.CoreMemoryCacheProvider>();
                 }
 
 
