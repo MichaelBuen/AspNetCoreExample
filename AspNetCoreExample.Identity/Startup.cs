@@ -18,17 +18,17 @@
 
         public Startup(IConfiguration configuration) => this.Configuration = configuration;
 
-        public string ConnectionString => this.Configuration.GetConnectionString("DefaultConnection");
+        string ConnectionString => this.Configuration.GetConnectionString("DefaultConnection");
 
-        public (string appId, string appSecret) FacebookOptions
+        (string appId, string appSecret) FacebookOptions
             => (this.Configuration["Authentication:Facebook:AppId"],
                 this.Configuration["Authentication:Facebook:AppSecret"]);
 
-        public (string clientId, string clientSecret) GoogleOptions
+        (string clientId, string clientSecret) GoogleOptions
             => (this.Configuration["Authentication:Google:ClientId"],
                 this.Configuration["Authentication:Google:ClientSecret"]);
 
-        public (string consumerKey, string consumerSecret) TwitterOptions
+        (string consumerKey, string consumerSecret) TwitterOptions
             => (this.Configuration["Authentication:Twitter:ConsumerKey"],
                 this.Configuration["Authentication:Twitter:ConsumerSecret"]);
 
