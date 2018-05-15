@@ -1,5 +1,4 @@
 ﻿create schema identity;
-create schema job;
 
 create table identity.user
 (
@@ -57,7 +56,7 @@ create table identity.role
 create index ix_identity_role__normalized_name ON identity.role (normalized_name);
 
 
-CREATE TABLE identity.user_role
+create table identity.user_role
 (
     user_fk int not null  references identity.user(id),
     role_fk int not null  references identity.role(id),
