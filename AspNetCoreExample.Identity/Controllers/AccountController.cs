@@ -220,7 +220,7 @@ namespace AspNetCoreExample.Identity.Controllers
             ViewData["ReturnUrl"] = returnUrl;
             if (ModelState.IsValid)
             {
-                var user = new Ddd.IdentityDomain.User(model.Email);
+                var user = new Ddd.IdentityDomain.User(model.Email, model.Email);
                 var result = await _userManager.CreateAsync(user, model.Password);
                 if (result.Succeeded)
                 {
@@ -310,7 +310,7 @@ namespace AspNetCoreExample.Identity.Controllers
                 {
                     throw new ApplicationException("Error loading external login information during confirmation.");
                 }
-                var user = new Ddd.IdentityDomain.User(model.Email);
+                var user = new Ddd.IdentityDomain.User(model.Email, model.Email);
                 var result = await _userManager.CreateAsync(user);
                 if (result.Succeeded)
                 {
