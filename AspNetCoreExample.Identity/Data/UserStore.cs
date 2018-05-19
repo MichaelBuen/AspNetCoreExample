@@ -56,7 +56,7 @@
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            using (var ddd = this.DbFactory.OpenDddForUpdate())
+            using (var ddd = this.DbFactory.OpenDdd())
             {
                 var user = await ddd.GetAsync<User>(int.Parse(userId));
 

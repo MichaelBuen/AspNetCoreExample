@@ -38,6 +38,13 @@
                 _transaction.Dispose();
                                               
             _session.Dispose();
+
+			if (_transaction != null && !_transactionCompleted)
+            {
+                throw new Exception(
+                    "Database is opened for update, but commit or rollback was not invoked"
+                );
+            }
         }
 
 
