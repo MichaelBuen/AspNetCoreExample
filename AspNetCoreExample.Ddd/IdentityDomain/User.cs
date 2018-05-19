@@ -11,7 +11,7 @@
     public class User : IdentityUser<int>
     {
         /// <summary>
-        ///  One-to-many external logins
+        ///  One-to-many to external logins
         /// </summary>
         /// <value>The external logins.</value>
         public IEnumerable<ExternalLogin> ExternalLogins { get; protected set; } = new Collection<ExternalLogin>();
@@ -146,6 +146,10 @@
 
     public class ExternalLogin
     {
+		/// <summary>
+        /// Many-to-one to a user
+        /// </summary>
+        /// <value>The user.</value>
         protected User User { get; set; }
 
         internal ExternalLogin(User applicationUser) => this.User = applicationUser;
