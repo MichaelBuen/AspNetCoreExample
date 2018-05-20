@@ -349,8 +349,8 @@
             {
                 var au = await ddd.GetAsync<User>(user.Id);
 
-                var list = await au.GetUserLoginInfoListAsync();
-
+                var list = au.GetUserLoginInfoList();
+                
                 return list;
             }
         }

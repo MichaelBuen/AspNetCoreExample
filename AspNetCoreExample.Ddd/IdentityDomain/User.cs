@@ -129,19 +129,51 @@
                 au.ExternalLogins.Any(el => el.LoginProvider == loginProvider && el.ProviderKey == providerKey)
             );
 
-        public async Task<IList<UserLoginInfo>> GetUserLoginInfoListAsync() =>
-            await this.ExternalLogins.AsQueryable()
+		//public async Task<IList<UserLoginInfo>> GetUserLoginInfoListAsync() =>
+        //await this.ExternalLogins.AsQueryable()
+        //.Select(el =>
+        //    new UserLoginInfo(
+        //        el.LoginProvider,
+        //        el.ProviderKey,
+        //        el.DisplayName
+        //    )
+        //)
+        //// The cache of a user's external logins gets trashed when another user updates his/her external logins.
+        //// Explore how to make collection caching more robust. Disable for the meantime.
+        //// .CacheableOk() 
+        //.ToListAsyncOk();        
+
+        // first exploration. not working too. cache gets trashed between users.
+        //public async Task<IList<UserLoginInfo>> GetUserLoginInfoListAsync()
+        //{
+        //  var externalLoginsQuery = this.ExternalLogins.AsQueryable();
+
+        //  var externalLogins = await externalLoginsQuery.CacheableOk().ToListAsyncOk();
+
+        //  var userLoginInfoList =
+        //      externalLogins.Select(el =>
+        //          new UserLoginInfo(
+        //              el.LoginProvider,
+        //              el.ProviderKey,
+        //              el.DisplayName
+        //          )
+        //      ).ToList();
+
+        //  return userLoginInfoList;
+        //}
+
+        // second exploration. changes on an entity's collection property 
+        // does not trash the collection property of another's entity.
+        // Looks like fetching the aggregate's root also cache its one-to-many collections.
+        public IList<UserLoginInfo> GetUserLoginInfoList() =>
+            this.ExternalLogins
             .Select(el =>
                 new UserLoginInfo(
                     el.LoginProvider,
                     el.ProviderKey,
                     el.DisplayName
                 )
-            )
-            // The cache of a user's external logins gets trashed when another user updates his/her external logins.
-            // Explore how to make collection caching more robust. Disable for the meantime.
-            // .CacheableOk() 
-            .ToListAsyncOk();
+            ).ToList();
     }
 
     public class ExternalLogin
