@@ -157,3 +157,18 @@
 
 //    return dc;
 //}
+
+
+
+// localize definition:
+
+/*
+create function localize(x_phrase jsonb, x_ui_lang text, x_fallback_lang text) returns text
+as
+$$
+begin
+    return coalesce(jsonb_extract_path_text(x_phrase, x_ui_lang), jsonb_extract_path_text(x_phrase, x_fallback_lang));
+end;
+$$ language 'plpgsql' immutable;
+*/
+
