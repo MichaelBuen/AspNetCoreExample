@@ -17,7 +17,7 @@ create table identity.user
     security_stamp          text,
     concurrency_stamp       text,
 
-    lockout_end             time with time zone,
+    lockout_end             timestamptz,
     lockout_enabled         boolean  not null  default false,
     access_failed_count     int  not null  default 0
 );
