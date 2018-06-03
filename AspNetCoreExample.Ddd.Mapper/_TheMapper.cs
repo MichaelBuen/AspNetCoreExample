@@ -1,11 +1,4 @@
-﻿#define DEBUG
-
-// Uncomment this before deploying
-#define USECACHE
-
-
-
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo("AspNetCoreExample.Test")]
 
@@ -18,9 +11,12 @@ namespace AspNetCoreExample.Ddd.Mapper
 
     public static class TheMapper
     {
-        public static NHibernate.ISessionFactory BuildSessionFactory(string connectionString, bool useUnitTest = false)
+        public static NHibernate.ISessionFactory BuildSessionFactory(
+            string connectionString,
+            bool useCache,
+            bool useUnitTest = false)
         {
-            var mapper = new PostgresNamingConventionAutomapper(); //  NHibernate.Mapping.ByCode.ConventionModelMapper();
+            var mapper = new PostgresNamingConventionAutomapper(useCache); //  NHibernate.Mapping.ByCode.ConventionModelMapper();
 
 
             var cfg = new NHibernate.Cfg.Configuration();
@@ -35,12 +31,6 @@ namespace AspNetCoreExample.Ddd.Mapper
                 c.ConnectionString = connectionString;
 
                 c.KeywordsAutoImport = Hbm2DDLKeyWords.AutoQuote;
-
-                if (useUnitTest)
-                {
-                    c.LogSqlInConsole = true;
-                    c.LogFormattedSql = true;
-                }
 
 #if DEBUG
                 c.LogSqlInConsole = true;
@@ -80,30 +70,31 @@ namespace AspNetCoreExample.Ddd.Mapper
 
 
 
-#if USECACHE
-            cfg.Cache(x =>
+            if (useCache)
             {
-                // SysCache is not stable on unit testing
-                if (!useUnitTest)
+                cfg.Cache(x =>
                 {
-                    x.Provider<NHibernate.Caches.CoreMemoryCache.CoreMemoryCacheProvider>();
+                    // SysCache is not stable on unit testing
+                    if (!useUnitTest)
+                    {
+                        x.Provider<NHibernate.Caches.CoreMemoryCache.CoreMemoryCacheProvider>();
 
-                    // I don't know why SysCacheProvider is not stable on simultaneous unit testing, 
-                    // might be SysCacheProvider is just giving one session factory, so simultaneous test see each other caches
-                    // This solution doesn't work: http://stackoverflow.com/questions/700043/mstest-executing-all-my-tests-simultaneously-breaks-tests-what-to-do                    
-                }
-                else
-                {
-                    x.Provider<NHibernate.Caches.CoreMemoryCache.CoreMemoryCacheProvider>();
-                }
+                        // I don't know why SysCacheProvider is not stable on simultaneous unit testing, 
+                        // might be SysCacheProvider is just giving one session factory, so simultaneous test see each other caches
+                        // This solution doesn't work: http://stackoverflow.com/questions/700043/mstest-executing-all-my-tests-simultaneously-breaks-tests-what-to-do                    
+                    }
+                    else
+                    {
+                        x.Provider<NHibernate.Caches.CoreMemoryCache.CoreMemoryCacheProvider>();
+                    }
 
 
-                // http://stackoverflow.com/questions/2365234/how-does-query-caching-improves-performance-in-nhibernate
+                    // http://stackoverflow.com/questions/2365234/how-does-query-caching-improves-performance-in-nhibernate
 
-                // Need to be explicitly turned on so the .Cacheable directive on Linq will work:                    
-                x.UseQueryCache = true;
-            });
-#endif
+                    // Need to be explicitly turned on so the .Cacheable directive on Linq will work:                    
+                    x.UseQueryCache = true;
+                });
+            }
 
 
             ////// temporarily set to true so we can see the SQL when we are in web, when we are not in unit test.

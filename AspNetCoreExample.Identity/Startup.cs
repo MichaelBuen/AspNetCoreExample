@@ -20,6 +20,8 @@
 
         string ConnectionString => this.Configuration.GetConnectionString("DefaultConnection");
 
+        bool UseCache => bool.TryParse(this.Configuration["NHibernate:UseCache"], out var result) && result;
+
         (string appId, string appSecret) FacebookOptions
             => (this.Configuration["Authentication:Facebook:AppId"],
                 this.Configuration["Authentication:Facebook:AppSecret"]);
@@ -35,8 +37,19 @@
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            bool useUnitTest = false;
+
+            #if DEBUG
+                useUnitTest = true;
+            #endif
+
             services.AddSingleton<NHibernate.ISessionFactory>(serviceProvider =>
-                AspNetCoreExample.Ddd.Mapper.TheMapper.BuildSessionFactory(this.ConnectionString)
+                AspNetCoreExample.Ddd.Mapper.TheMapper.BuildSessionFactory(this.ConnectionString, this.UseCache, useUnitTest)
+            );
+
+
+            services.AddSingleton<NHibernate.ISessionFactory>(serviceProvider =>
+                AspNetCoreExample.Ddd.Mapper.TheMapper.BuildSessionFactory(this.ConnectionString, this.UseCache, useUnitTest)
             );
 
             services.AddSingleton<IDatabaseFactory, DatabaseFactory>();

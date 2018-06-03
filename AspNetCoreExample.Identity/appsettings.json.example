@@ -1,16 +1,18 @@
 ﻿{
     "ConnectionStrings": {
-        "DefaultConnection": "Server=localhost;Port=5432;Database=AspNetCoreExample;User Id=postgres;Password=opensesame93;"
+        "DefaultConnection": "Server=localhost; Port=5432; Database=Moonlighting; User Id=moonlighting-user; Password=moonlighting-password; TimeZone=UTC"
     },
     "Logging": {
         "IncludeScopes": false,
         "LogLevel": {
-            "Default": "Warning"
+        "Default": "Warning"
         }
     },
-    "Authentication:Facebook:AppId": "app-id-goes-here",
-    "Authentication:Facebook:AppSecret": "app-secret-goes-here",
-    "Authentication:Google:ClientId": "client-id-goes-here",
-    "Authentication:Twitter:ConsumerKey": "consumer-key-goes-here",
-    "Authentication:Twitter:ConsumerSecret": "consumer-secret-goes-here"
+    "NHibernate:UseCache": "True",
+    "Authentication:Facebook:AppId": "",
+    "Authentication:Facebook:AppSecret": "",
+    "Authentication:Google:ClientId": "",
+    "Authentication:Google:ClientSecret": "",
+    "Authentication:Twitter:ConsumerKey": "",
+    "Authentication:Twitter:ConsumerSecret": ""
 }

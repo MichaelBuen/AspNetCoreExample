@@ -1,11 +1,14 @@
-﻿#define USECACHE
-
-namespace AspNetCoreExample.Ddd.Mapper
+﻿namespace AspNetCoreExample.Ddd.Mapper
 {
     partial class PostgresNamingConventionAutomapper : NHibernate.Mapping.ByCode.ConventionModelMapper
     {
-        internal PostgresNamingConventionAutomapper()
+        bool UseCache { get; }
+
+
+        internal PostgresNamingConventionAutomapper(bool useCache)
         {
+            this.UseCache = useCache;
+
             var mapper = this;
 
             mapper.IsEntity((t, declared) =>
@@ -60,17 +63,17 @@ namespace AspNetCoreExample.Ddd.Mapper
 
 
 
-        static void Mapper_BeforeMapClass(
+        void Mapper_BeforeMapClass(
             NHibernate.Mapping.ByCode.IModelInspector modelInspector,
             System.Type type,
             NHibernate.Mapping.ByCode.IClassAttributesMapper classCustomizer
         )
         {
 
-#if USECACHE
-            classCustomizer.Cache(cacheMapping => cacheMapping.Usage(NHibernate.Mapping.ByCode.CacheUsage.ReadWrite));
-#endif
-
+            if (this.UseCache)
+            {
+                classCustomizer.Cache(cacheMapping => cacheMapping.Usage(NHibernate.Mapping.ByCode.CacheUsage.ReadWrite));
+            }
 
 
             string fullName = type.FullName; // example: AspNetCoreExample.Ddd.IdentityDomain.ApplicationUser
@@ -177,17 +180,25 @@ namespace AspNetCoreExample.Ddd.Mapper
 
         static void Mapper_BeforeMapProperty(
             NHibernate.Mapping.ByCode.IModelInspector modelInspector,
-            NHibernate.Mapping.ByCode.PropertyPath member,
+            NHibernate.Mapping.ByCode.PropertyPath propertyPath,
             NHibernate.Mapping.ByCode.IPropertyMapper propertyMapper
         )
         {
-            string postgresFriendlyName = member.ToColumnName().ToLowercaseNamingConvention();
+            string postgresFriendlyName = propertyPath.ToColumnName().ToLowercaseNamingConvention();
 
             propertyMapper.Column(postgresFriendlyName);
 
+            System.Type st = propertyPath.LocalMember.GetPropertyOrFieldType();
+
+            // http://www.ienablemuch.com/2018/06/utc-all-things-with-nhibernate-datetime-postgres-timestamptz.html
+            if (st == typeof(System.DateTime) || st == typeof(System.DateTime?))
+            {
+                propertyMapper.Type<Infrastructure.NHibernateInfra.CustomUtcType>();
+            }
+
         }
 
-        static void Mapper_AfterMapProperty(
+        void Mapper_AfterMapProperty(
             NHibernate.Mapping.ByCode.IModelInspector modelInspector,
             NHibernate.Mapping.ByCode.PropertyPath propertyPath,
             NHibernate.Mapping.ByCode.IPropertyMapper propertyMapper
@@ -203,7 +214,7 @@ namespace AspNetCoreExample.Ddd.Mapper
 
         }
 
-        static void Mapper_BeforeMapBag(
+        void Mapper_BeforeMapBag(
             NHibernate.Mapping.ByCode.IModelInspector modelInspector,
             NHibernate.Mapping.ByCode.PropertyPath propertyPath,
             NHibernate.Mapping.ByCode.IBagPropertiesMapper bagPropertiesCustomizer
@@ -233,13 +244,16 @@ namespace AspNetCoreExample.Ddd.Mapper
             bagPropertiesCustomizer.Lazy(NHibernate.Mapping.ByCode.CollectionLazy.Extra);
 
 
-#if USECACHE
-            bagPropertiesCustomizer.Cache(cacheMapping => cacheMapping.Usage(NHibernate.Mapping.ByCode.CacheUsage.ReadWrite));
-#endif
+            if (this.UseCache)
+            {
+                bagPropertiesCustomizer.Cache(
+                    cacheMapping => cacheMapping.Usage(NHibernate.Mapping.ByCode.CacheUsage.ReadWrite)
+                );
+            }
         }
 
 
-        static void Mapper_BeforeMapSet(
+        void Mapper_BeforeMapSet(
             NHibernate.Mapping.ByCode.IModelInspector modelInspector,
             NHibernate.Mapping.ByCode.PropertyPath propertyPath,
             NHibernate.Mapping.ByCode.ISetPropertiesMapper setPropertiesCustomizer
@@ -253,9 +267,12 @@ namespace AspNetCoreExample.Ddd.Mapper
             // See advantage of Extra Lazy here: http://www.ienablemuch.com/2013/12/pragmatic-ddd.html
             setPropertiesCustomizer.Lazy(NHibernate.Mapping.ByCode.CollectionLazy.Extra);
 
-#if USECACHE
-            setPropertiesCustomizer.Cache(cacheMapping => cacheMapping.Usage(NHibernate.Mapping.ByCode.CacheUsage.ReadWrite));
-#endif
+            if (this.UseCache)
+            {
+                setPropertiesCustomizer.Cache(
+                    cacheMapping => cacheMapping.Usage(NHibernate.Mapping.ByCode.CacheUsage.ReadWrite)
+                );
+            }
         }
 
 
