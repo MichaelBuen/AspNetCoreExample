@@ -428,6 +428,8 @@
 
 namespace AspNetCoreExample.Ddd.Mapper
 {
+    using AspNetCoreExample.Core;
+
     using NHibernate.Mapping.ByCode;
 
     static class NHibernateHelper
@@ -442,21 +444,6 @@ namespace AspNetCoreExample.Ddd.Mapper
         internal static System.Type GetPropertyOrFieldType(
             this System.Reflection.MemberInfo memberInfo
         ) => NHibernate.Mapping.ByCode.TypeExtensions.GetPropertyOrFieldType(memberInfo);
-
-        // https://stackoverflow.com/questions/457676/check-if-a-class-is-derived-from-a-generic-class
-        internal static bool IsOpenGenericAssignableFrom(this System.Type openGeneric, System.Type fromCheck)
-        {
-            while (fromCheck != null && fromCheck != typeof(object))
-            {
-                var cur = fromCheck.IsGenericType ? fromCheck.GetGenericTypeDefinition() : fromCheck;
-                if (openGeneric == cur)
-                {
-                    return true;
-                }
-                fromCheck = fromCheck.BaseType;
-            }
-            return false;
-        }
     }
 
     static class IdentityCoreHelper

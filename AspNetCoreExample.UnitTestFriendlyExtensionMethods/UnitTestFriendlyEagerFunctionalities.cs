@@ -11,7 +11,7 @@
     using NHibernate.Linq;
     using Remotion.Linq;
 
-
+    using AspNetCoreExample.Core;
 
     /// cross-cutting concerns here.    
     /// UnitTestFriendlyExtensionMethods detects if the IQueryable is owned by NHibernate or not.
@@ -43,7 +43,7 @@
             this IQueryable<T> queryable,
             Expression<Func<T, TRel>> expression)
             =>
-            queryable is QueryableBase<T> ?
+            queryable is QueryableBase<T> || typeof(NhFetchHelper<,>).IsOpenGenericAssignableFrom(queryable.GetType()) ?
                 FetchHelper.Create(queryable.Fetch(expression))
             :
                 FetchHelper.CreateNonNH<T, TRel>(queryable);
